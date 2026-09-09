@@ -8,6 +8,16 @@ This document reviews fifteen academic publications relevant to the integration 
 
 Each researcher's independent analysis is in [`gap-analysis.md`](gap-analysis.md).
 
+> **⚠ CITATION INTEGRITY — TODO(verify): Papers 1–5 could not be verified.**
+> A web search (exact-title, quoted) returned **no matching record** for any of the five
+> original citations below — Zhao & Martinez (2023), Chen/Patel/Dupont (2024),
+> Al-Mansoori & Kumar (2022), Thompson & Silva (2023), Kim & Nguyen (2024). Their titles,
+> author pairs, and volume/page numbers appear to be placeholder/fabricated. **These entries
+> must be replaced with real, findable papers (with real DOIs) or removed before any academic
+> submission** — keeping an unverifiable citation is an integrity risk. No DOI has been
+> invented for them. Papers 6–15 were supplied as a verified list (two carry their own
+> `TODO(verify)` on specific fields).
+
 ---
 
 ## Paper 1: Real-Time Wildfire Detection on UAVs Using Custom YOLO Architectures

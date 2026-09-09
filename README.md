@@ -145,6 +145,7 @@ cloud-drone-fire-detection/
 ├── frontend/                  # React dashboard mockups planning
 ├── ai/                        # AI training workflows and RAG index specifications
 ├── database/                  # SQL and Vector schema descriptions
+├── data/knowledge-base/       # SOP source documents for the RAG/FAISS index (stub)
 ├── cloud/                     # Azure resource mapping
 ├── testing/                   # Test plans and validation matrices
 ├── results/                   # Metric evaluation templates
@@ -178,7 +179,10 @@ cloud-drone-fire-detection/
 ---
 
 ## References
-1. Zhao, L., & Martinez, J. (2023). Real-Time Wildfire Detection on UAVs Using Custom YOLO Architectures. *IEEE Transactions on Geoscience and Remote Sensing*, 61, 1-12.
+
+> **TODO(verify): References 1–5 are unverified** — an exact-title web search returned no matching record for any of them; they must be replaced with real, findable papers (with DOIs) or removed before submission. References 6–15 were supplied as a verified list (8, 15 carry field-level `TODO(verify)`).
+
+1. Zhao, L., & Martinez, J. (2023). Real-Time Wildfire Detection on UAVs Using Custom YOLO Architectures. *IEEE Transactions on Geoscience and Remote Sensing*, 61, 1-12. `[TODO(verify) — unverifiable]`
 2. Chen, H., Patel, S., & Dupont, Y. (2024). Retrieval-Augmented Generation (RAG) for Automated Crisis SOP Synthesis. *Journal of Emergency Management & Artificial Intelligence*, 18(2), 145-158.
 3. Al-Mansoori, M., & Kumar, R. (2022). Edge-Cloud Collaborative Computing Architectures for Environmental Monitoring. *ACM Transactions on Internet of Things*, 3(4), 210-224.
 4. Thompson, G., & Silva, F. (2023). Autonomous UAV Flight Path Planning for Dynamic Wildfire Tracking. *Robotics and Autonomous Systems*, 162, 104-115.
