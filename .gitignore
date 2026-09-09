@@ -19,6 +19,13 @@ ai/rag/faiss_index/
 *.pt
 .env
 
+# --- Phase-3: large datasets & training runs (never commit) ---
+*.zip
+data/flame/
+data/firenet/
+runs/
+ai/models/weights/*.pt
+
 # --- Node / React ---
 node_modules/
 frontend/dist/
