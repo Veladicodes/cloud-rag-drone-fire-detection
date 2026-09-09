@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     # Blob backend.  local (filesystem stand-in) | azure (azure-storage-blob)
     storage_mode: str = "local"
     azure_storage_connection_string: str = ""
+    azure_storage_account_url: str = ""  # for the Managed-Identity path
     azure_blob_container: str = "incident-snapshots"
 
     kb_path: str = "./data/knowledge-base/sample_sops"

@@ -47,3 +47,10 @@ results/latency/*
 # Phase-3 derived dataset dirs
 data/firenet_yolo/
 data/flame_cls/
+
+# Terraform
+cloud/terraform/.terraform/
+cloud/terraform/*.tfstate*
+cloud/terraform/terraform.tfvars
+cloud/terraform/.terraform.lock.hcl
+frontend/.env.production

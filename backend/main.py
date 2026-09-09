@@ -57,12 +57,16 @@ app.include_router(routes_plans.router)
 
 @app.get("/health")
 def health() -> dict:
+    is_local = settings.storage_mode != "azure" and settings.database_url.startswith("sqlite")
     return {
         "status": "ok",
         "llm_mode": settings.llm_mode,
         "embed_mode": settings.embed_mode,
         "yolo_mode": settings.yolo_mode,
-        "note": "all cloud services are local stand-ins — see cloud/README_LOCAL_MODE.md",
+        "storage_mode": settings.storage_mode,
+        "database": "sqlite" if settings.database_url.startswith("sqlite") else "azure-sql",
+        "note": ("all cloud services are local stand-ins - see cloud/README_LOCAL_MODE.md"
+                 if is_local else "running against real Azure resources - see cloud/DEPLOY.md"),
     }
 
 
