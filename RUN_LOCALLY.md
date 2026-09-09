@@ -24,12 +24,16 @@ Indexes `data/knowledge-base/sample_sops/` with `sentence-transformers/all-mpnet
 (768-dim). First run downloads the model (~420 MB). Set `EMBED_MODE=hash` in `.env`
 to skip the model entirely (non-semantic fallback — CI only).
 
-## 2. Seed the database
+## 2. Create the database
 
 ```bash
-python -m database.seed              # 3 mock drones
+python -m database.seed              # create_all + 3 mock drones
 python -m database.seed --incident   # + one worked incident with a plan (nice for a first look)
+# or, for a migration-based setup (what real Azure SQL uses):
+alembic upgrade head && python -m database.seed
 ```
+
+(Shortcut: `make setup && make index && make seed && make backend`, then `make sim` in another shell.)
 
 ## 3. Start the backend (terminal A)
 
