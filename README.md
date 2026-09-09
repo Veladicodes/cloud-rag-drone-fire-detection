@@ -132,23 +132,23 @@ The conceptual architecture separates tasks into key operational layers:
 ---
 
 ## Repository Structure
-The repository is structured to prioritize research planning and architecture:
+Phase-1 was research planning and architecture; Phase-2 adds a **working local
+prototype** (no Docker / no Azure account / no API keys — every cloud service has
+a local stand-in, mapped in [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md)).
+See [`RUN_LOCALLY.md`](RUN_LOCALLY.md) to run it.
 
 ```
 cloud-drone-fire-detection/
-├── docs/                      # General project documentation
-│   ├── research/              # Academic survey, gap analysis, methodology, and objectives
-│   ├── architecture/          # Conceptual system structure, data flows, and deployment
-│   ├── management/            # Timeline, milestones, and work distribution
-│   └── adr/                   # Architecture Decision Records (ADR-001 to ADR-003)
-├── backend/                   # FastAPI backend planning files
-├── frontend/                  # React dashboard mockups planning
-├── ai/                        # AI training workflows and RAG index specifications
-├── database/                  # SQL and Vector schema descriptions
-├── data/knowledge-base/       # SOP source documents for the RAG/FAISS index (stub)
-├── cloud/                     # Azure resource mapping
-├── testing/                   # Test plans and validation matrices
-├── results/                   # Metric evaluation templates
+├── docs/                      # Research docs, ADRs, architecture, management plans
+│   ├── research/  architecture/  management/  adr/
+├── backend/                   # FastAPI app: main.py, api/ routes, core/ config+db, services/
+├── frontend/                  # React + Vite dashboard: map, alert feed, plan viewer
+├── ai/                        # models/yolo_detector.py, rag/ (ingest·retrieve·orchestrate), evaluation/
+├── database/                  # SQLAlchemy models.py, migrations/, seed.py
+├── data/knowledge-base/       # SOP source docs for the RAG/FAISS index (+ sample_sops/)
+├── cloud/                     # storage_local.py (Blob stand-in), README_LOCAL_MODE.md
+├── testing/                   # simulate_drone.py, unit/ tests, conftest.py
+├── results/                   # measured vs PENDING metrics (machine-written run outputs)
 └── presentation/              # Slide structures and poster designs
 ```
 
