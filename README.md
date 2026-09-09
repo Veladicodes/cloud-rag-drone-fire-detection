@@ -180,13 +180,13 @@ cloud-drone-fire-detection/
 
 ## References
 
-> **TODO(verify): References 1–5 are unverified** — an exact-title web search returned no matching record for any of them; they must be replaced with real, findable papers (with DOIs) or removed before submission. References 6–15 were supplied as a verified list (8, 15 carry field-level `TODO(verify)`).
+> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). Ref 2's exact author list is `TODO(verify)`; refs 8 and 15 carry field-level `TODO(verify)`.
 
-1. Zhao, L., & Martinez, J. (2023). Real-Time Wildfire Detection on UAVs Using Custom YOLO Architectures. *IEEE Transactions on Geoscience and Remote Sensing*, 61, 1-12. `[TODO(verify) — unverifiable]`
-2. Chen, H., Patel, S., & Dupont, Y. (2024). Retrieval-Augmented Generation (RAG) for Automated Crisis SOP Synthesis. *Journal of Emergency Management & Artificial Intelligence*, 18(2), 145-158.
-3. Al-Mansoori, M., & Kumar, R. (2022). Edge-Cloud Collaborative Computing Architectures for Environmental Monitoring. *ACM Transactions on Internet of Things*, 3(4), 210-224.
-4. Thompson, G., & Silva, F. (2023). Autonomous UAV Flight Path Planning for Dynamic Wildfire Tracking. *Robotics and Autonomous Systems*, 162, 104-115.
-5. Kim, D., & Nguyen, T. (2024). Deep Learning Methods for Amorphous Smoke Segmentation in Forest Canopies. *International Journal of Wildland Fire*, 33(1), 45-56.
+1. Zhu, W., Niu, S., Yue, J., & Zhou, Y. (2025). Multiscale wildfire and smoke detection in complex drone forest environments based on YOLOv8. *Scientific Reports*, 15. https://doi.org/10.1038/s41598-025-86239-w
+2. [TODO(verify) authors] (2025). A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation. *npj Climate Action*, 4. https://doi.org/10.1038/s44168-025-00254-1
+3. Roostaei, J., & Wager, Y. Z. (2023). IoT-based edge computing (IoTEC) for improved environmental monitoring. *Sustainable Computing: Informatics and Systems*, 39, 100870. https://doi.org/10.1016/j.suscom.2023.100870
+4. Bailon-Ruiz, R., Bit-Monnot, A., & Lacroix, S. (2022). Real-time wildfire monitoring with a fleet of UAVs. *Robotics and Autonomous Systems*, 152, 104071. https://doi.org/10.1016/j.robot.2022.104071
+5. Khan, S., Muhammad, K., Hussain, T., Del Ser, J., Cuzzolin, F., Bhattacharyya, S., Akhtar, Z., & de Albuquerque, V. H. C. (2021). DeepSmoke: Deep learning model for smoke detection and segmentation in outdoor environments. *Expert Systems with Applications*, 182, 115125. https://doi.org/10.1016/j.eswa.2021.115125
 6. Diaz-Vilor, C., Lozano, A., & Jafarkhani, H. (2025). A Reinforcement Learning Approach for Wildfire Tracking with UAV Swarms. *IEEE Transactions on Wireless Communications*.
 7. Tzoumas, G., Salina, L., McConville, A., Richardson, T., & Hauert, S. (2024). Extinguishing Wildfires in Large Scale Scenarios Using Swarms of UAVs. In *Swarm Intelligence (ANTS 2024)*, Springer LNCS vol. 14987. https://doi.org/10.1007/978-3-031-70932-6_6
 8. Conceptual design of a wildfire emergency response system empowered by swarms of unmanned aerial vehicles (2025). *ScienceDirect*. Article S2212420925003176. [TODO(verify) author names]
