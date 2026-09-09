@@ -1,0 +1,20 @@
+STAGING AND DISPATCH COORDINATION (ILLUSTRATIVE — NOT AN OFFICIAL SOP)
+
+Select a staging area that is upwind of the incident, on or beside a road that
+will not be cut by fire spread, with room to turn engines and land a helicopter
+if needed. A point roughly 1 km upwind of the incident on the nearest through
+road is a reasonable default; move it if the wind sector shifts toward it.
+
+Dispatch sequence for an escalating detection:
+- First: nearest engine or crew to the anchor point, plus a lookout to a vantage.
+- Second: additional ground resources staged, not committed, until size-up
+  confirms where they hold.
+- Air support requested early when the head is in heavy fuel or terrain blocks
+  ground access; give the aircraft the incident coordinates, wind, and a
+  described anchor.
+
+Report to dispatch on a fixed schedule: current size, percent contained,
+resources committed versus staged, projected spread for the next operational
+period, and any change to the evacuation arc. Pass the incident coordinates and
+the staging coordinates in every escalation message so inbound resources route
+to the correct point.

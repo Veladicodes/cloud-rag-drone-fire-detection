@@ -1,0 +1,21 @@
+ANCHOR POINT AND FLANKING ATTACK (ILLUSTRATIVE — NOT AN OFFICIAL SOP)
+
+Begin containment from an anchor point: a barrier to fire spread such as a road,
+stream, rock outcrop, or previously burned ground, from which a control line can
+be built without the risk of fire outflanking the crew.
+
+Work from the anchor along the flanks toward the head. Do not start line
+construction directly at or ahead of the head under active spread conditions.
+The containment priority vector points from the anchor, up the cooler flank
+(usually the upwind or downslope side), holding the downwind head for last once
+the flanks are secured.
+
+Line spacing and width scale with fuel and slope:
+- Light grass, low wind: a narrow scratch line may hold.
+- Brush or timber litter, moderate wind: widen the line and remove overhanging
+  fuel; expect to hold and improve.
+- High fuel dryness or wind above roughly 20 km/h: use the widest line resources
+  allow, back it with a burnout where safe, and post holding crews.
+
+Keep one flank always tied to good black or a firm barrier. If a flank cannot be
+held, fall back to the next barrier rather than leaving an open line.

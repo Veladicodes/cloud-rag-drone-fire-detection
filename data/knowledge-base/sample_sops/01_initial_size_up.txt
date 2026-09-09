@@ -1,0 +1,22 @@
+INITIAL SIZE-UP (ILLUSTRATIVE — NOT AN OFFICIAL SOP)
+
+On confirmation of a smoke or flame detection, the first task is a structured
+size-up before any resources are committed.
+
+Record the following within the first minutes:
+- Location as latitude/longitude plus nearest access road or trail.
+- Current fire size estimate and the fuel type carrying the fire (grass, brush,
+  timber litter, or timber crown).
+- Wind speed and direction at the incident, and any terrain that will channel it
+  (canyons, saddles, chimneys).
+- Values at risk downwind and downslope: structures, powerlines, camps, roads.
+- Time of detection and expected time to first resource arrival.
+
+Fire spread generally increases with wind speed, with slope, and as fuel
+moisture drops. Under high wind or on steep slope, expect the head to move faster
+than crews can travel; plan from the flanks, not the head.
+
+Escalate to a larger response immediately if any of these are true: sustained
+wind above roughly 25 km/h, fire established in crown fuels, spotting observed
+ahead of the main fire, or an evacuation-relevant value within one hour of the
+projected head.
