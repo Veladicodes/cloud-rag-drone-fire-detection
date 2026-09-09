@@ -11,9 +11,8 @@ Each researcher's independent analysis is in [`gap-analysis.md`](gap-analysis.md
 > **Citation note.** The five original citations for papers 1–5 (Zhao & Martinez 2023,
 > Chen/Patel/Dupont 2024, Al-Mansoori & Kumar 2022, Thompson & Silva 2023, Kim & Nguyen 2024)
 > could not be verified via web search and have been **replaced with real, DOI-verified
-> publications** on the same five topics. Paper 2's exact author list is still
-> `TODO(verify)` (the DOI resolves). Papers 6–15 were supplied as a verified list (8 and 15
-> carry field-level `TODO(verify)`).
+> publications** on the same five topics (all with confirmed authors and DOIs). Papers 6–15
+> were supplied as a verified list; 8 and 15 carry field-level `TODO(verify)`.
 
 ---
 
@@ -42,10 +41,10 @@ The contribution is a better detector. Its output is bounding boxes and class sc
 ## Paper 2: A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation
 
 ### Citation
-- **Authors**: TODO(verify) exact author list — DOI resolves to the published article.
-- **Journal/Conference**: *npj Climate Action* (Nature), 4
+- **Authors**: Xie, Y., Jiang, B., Mallick, T., Bergerson, J. D., Hutchison, J. K., Verner, D. R., Branham, J., Alexander, M. R., Ross, R. B., Feng, Y., Levy, L.-A., Su, W., & Taylor, C. J.
+- **Journal/Conference**: *npj Climate Action* (Nature)
 - **Year**: 2025
-- **DOI**: 10.1038/s44168-025-00254-1 (preprint: arXiv:2504.17200)
+- **DOI**: 10.1038/s44168-025-00254-1 (preprint: arXiv:2504.17200; published as "MARSHA: multi-agent RAG system for hazard adaptation")
 - **Title**: *A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation* (the wildfire-focused configuration is presented as "WildfireGPT")
 
 ### Methodology

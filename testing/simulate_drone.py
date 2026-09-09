@@ -32,8 +32,14 @@ SETTINGS = get_settings()
 BASE_LAT, BASE_LON = 34.0722, -118.2437
 
 
+_SAMPLE_DIR = Path(__file__).resolve().parent / "sample_images"
+
+
 def _frame(seed: int) -> bytes:
-    """Generate a small synthetic RGB frame (clearly a placeholder, not real imagery)."""
+    """Return a frame: a real sample image if any exist, else a generated placeholder."""
+    samples = sorted(_SAMPLE_DIR.glob("*.jpg")) + sorted(_SAMPLE_DIR.glob("*.png"))
+    if samples:
+        return samples[seed % len(samples)].read_bytes()
     try:
         from PIL import Image, ImageDraw
 
