@@ -1,0 +1,35 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# --- Local runtime artifacts (all are LOCAL STAND-INS for Azure services) ---
+# local.db      -> Azure SQL Database
+# storage/      -> Azure Blob Storage
+# logs/         -> Azure Monitor / alert delivery logs
+# ai/rag/faiss_index/ -> FAISS index build output
+# *.pt          -> downloaded model weights (e.g. yolov8n.pt)
+local.db
+storage/
+logs/
+ai/rag/faiss_index/
+*.pt
+.env
+
+# --- Node / React ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- results: keep READMEs + .gitkeep, ignore machine-written run outputs ---
+results/yolo-metrics/*
+results/rag-metrics/*
+results/latency/*
+!results/*/.gitkeep

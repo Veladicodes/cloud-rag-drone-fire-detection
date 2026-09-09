@@ -1,0 +1,10 @@
+# AI / RAG dependencies.
+faiss-cpu>=1.8
+numpy>=1.26
+sentence-transformers>=2.7      # embeddings (all-mpnet-base-v2); hash fallback if absent
+
+# optional — real edge detector; STUB detector used if absent
+ultralytics>=8.2
+
+# optional — real local LLM for LLM_MODE=local; [MOCK LLM OUTPUT] used if absent
+# transformers>=4.40

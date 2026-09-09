@@ -33,3 +33,4 @@ Survey           Study            Design            Plans             Testing   
 | **Ingestion** | Ingest telemetry overhead | Validation Gate CL-1 | Bandwidth utilization reduced by $\ge 70\%$ |
 | **RAG Precision** | Context retrieval recall | Validation Gate CG-1 | $k$-NN context retrieval recall $\ge 90\%$ |
 | **RAG Safety** | Checklist hallucination rate | Validation Gate CG-2 | Hallucination rate $\le 1.0\%$ under test prompts |
+| **Human Alerting** | Time from detection to first SMS dispatch (simulated) | Validation Gate AL-1 | $\le 15$ seconds |
