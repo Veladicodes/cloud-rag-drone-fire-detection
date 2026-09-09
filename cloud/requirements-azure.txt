@@ -1,0 +1,4 @@
+# Extra deps for STORAGE_MODE=azure / DATABASE_URL=Azure SQL (installed in the container image).
+azure-storage-blob>=12.19
+azure-identity>=1.16
+pyodbc>=5.1

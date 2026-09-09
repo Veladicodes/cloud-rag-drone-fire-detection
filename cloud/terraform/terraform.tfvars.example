@@ -1,0 +1,18 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is git-ignored.
+# Secrets are better passed as environment variables:
+#   export TF_VAR_sql_admin_password='...'
+#   export TF_VAR_gemini_api_key='...'
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus"
+prefix          = "cdfd"
+
+sql_admin_login = "cdfdadmin"
+# sql_admin_password  -> TF_VAR_sql_admin_password
+# gemini_api_key      -> TF_VAR_gemini_api_key
+
+# After the first image push, set this to <acr>.azurecr.io/cdfd-backend:latest
+# backend_image = "..."
+
+# After the Static Web App exists, set this so the backend CORS allows it
+# frontend_origin = "https://cdfdXXXXX-web.azurestaticapps.net"
