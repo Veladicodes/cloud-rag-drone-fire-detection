@@ -93,3 +93,32 @@ Changes applied in the remediation pass driven by `CLAUDE_CODE_MASTER_BRIEF.md`,
 
 ### Not touched (out of scope for this pass)
 - `datasets.md`, technology stack, GitHub-workflow docs, `objectives.md` — previously assessed as strong.
+
+---
+
+## 5. Review-2 Progress Log (working prototype)
+
+A local, runnable prototype was added on top of the (now remediated) documentation.
+**Nothing here uses a real Azure service** — every cloud component is a clearly
+labelled local stand-in (`cloud/README_LOCAL_MODE.md`). Runbook: `RUN_LOCALLY.md`.
+
+### Implemented (real code, runs locally)
+- **Backend** (`backend/`): FastAPI app — `WS /ws/telemetry`, `POST /api/v1/incidents`, `GET /api/v1/plans/{id}`, `GET /api/v1/incidents`, `GET /api/v1/alerts`, `/health`. SQLAlchemy 2.x models (`drones`, `telemetry`, `incidents`, `response_plans`, `alerts`) on SQLite, portable types only.
+- **Blob stand-in** (`cloud/storage_local.py`): `save_blob` / `get_blob` with the same signatures a thin `azure-storage-blob` wrapper would have.
+- **RAG pipeline** (`ai/rag/`): recursive 500/50 char chunker → embeddings (`sentence-transformers/all-mpnet-base-v2`, 768-dim; deterministic hash fallback for offline CI) → FAISS `IndexFlatL2` → top-k=3 retrieval reporting true L2 distance → LangChain-style bounded prompt with the `INSUFFICIENT_CONTEXT` fallback.
+- **Alert service** (`backend/services/alert_service.py`): mocked SMS/push — logs `[MOCK SMS to <role>]` to console + `logs/alerts.log` + an `alerts` row. `send_immediate_alert` is invoked in `POST /api/v1/incidents` **before** the RAG call starts (AL-1 / ADR-002 addendum).
+- **Edge detection** (`ai/models/yolo_detector.py`): pretrained COCO `yolov8n` as a **structural placeholder** (explicitly *not* wildfire-fine-tuned), with a dependency-free STUB detector fallback. Output contract: bbox / cls / confidence.
+- **Dashboard** (`frontend/`): React + Vite — live telemetry map (Leaflet), alert feed, RAG response-plan viewer. Functional, not styled.
+- **Simulator** (`testing/simulate_drone.py`): streams telemetry for N virtual drones and POSTs detections, so the whole pipeline demos with no hardware or dataset.
+- **Tests** (`testing/unit/`): detector contract, RAG retrieval structure, and an end-to-end route test asserting an `alerts` row **and** a `response_plans` row are created with immediate-before-enriched ordering.
+
+### Mocked / placeholder (and why)
+- **LLM** = `[MOCK LLM OUTPUT]` deterministic text (no API key / no Azure OpenAI). `LLM_MODE=local` tries a small `flan-t5` model; never returns unlabelled mock text.
+- **YOLO weights** = COCO, not FLAME/FireNet-tuned (dataset not downloaded).
+- **SMS/push** = log + DB row only (no Azure Communication Services account).
+- **DB / Blob / host** = SQLite / local folder / bare processes (no Azure).
+
+### Still pending real resources
+Real mAP/FPS on FLAME (CV-1/CV-2), measured bandwidth delta (CL-1), retrieval-recall
+set (CG-1), hallucination scoring with a real LLM (CG-2), and AL-1 against a real
+SMS provider. Tracked in `results/README.md`.
