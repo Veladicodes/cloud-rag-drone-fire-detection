@@ -41,3 +41,9 @@ results/rag-metrics/*
 results/latency/*
 !results/*/.gitkeep
 !results/yolo-metrics/last_run.json
+!results/yolo-metrics/train_*.json
+!results/rag-metrics/rag_eval.json
+
+# Phase-3 derived dataset dirs
+data/firenet_yolo/
+data/flame_cls/

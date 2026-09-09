@@ -28,14 +28,27 @@ class Settings(BaseSettings):
     # LOCAL STAND-IN FOR: Azure Blob Storage.
     storage_path: str = "./storage"
 
-    # LOCAL STAND-IN FOR: Azure OpenAI (GPT-4o).  mock | local
+    # Response-plan LLM.  mock | local | gemini
+    #   mock   -> deterministic "[MOCK LLM OUTPUT]" (no key, CI/offline)
+    #   local  -> small local transformers model, else mock
+    #   gemini -> Google Gemini Flash via GEMINI_API_KEY (real generation)
+    # (Azure OpenAI would be a fourth 'azure' branch once that key exists.)
     llm_mode: str = "mock"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
 
     # Embedding backend.  auto (sentence-transformers) | hash (offline fallback)
     embed_mode: str = "auto"
 
-    # Edge detector backend.  auto (ultralytics) | stub
+    # Edge detector backend.  auto (ultralytics COCO placeholder) | finetuned | stub
+    #   finetuned -> ai/models/weights/wildfire_yolov8n.pt (FireNet-trained)
     yolo_mode: str = "auto"
+    finetuned_weights: str = "./ai/models/weights/wildfire_yolov8n.pt"
+
+    # Blob backend.  local (filesystem stand-in) | azure (azure-storage-blob)
+    storage_mode: str = "local"
+    azure_storage_connection_string: str = ""
+    azure_blob_container: str = "incident-snapshots"
 
     kb_path: str = "./data/knowledge-base/sample_sops"
     faiss_index_path: str = "./ai/rag/faiss_index"

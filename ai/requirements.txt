@@ -8,3 +8,4 @@ ultralytics>=8.2
 
 # optional — real local LLM for LLM_MODE=local; [MOCK LLM OUTPUT] used if absent
 # transformers>=4.40
+google-genai>=1.0            # Gemini Flash for LLM_MODE=gemini (current SDK; supersedes google-generativeai)
