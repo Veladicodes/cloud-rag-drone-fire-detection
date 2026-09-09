@@ -12,7 +12,10 @@ Each researcher's independent analysis is in [`gap-analysis.md`](gap-analysis.md
 > Chen/Patel/Dupont 2024, Al-Mansoori & Kumar 2022, Thompson & Silva 2023, Kim & Nguyen 2024)
 > could not be verified via web search and have been **replaced with real, DOI-verified
 > publications** on the same five topics (all with confirmed authors and DOIs). Papers 6–15
-> were supplied as a verified list; 8 and 15 carry field-level `TODO(verify)`.
+> were supplied as a verified list. Papers 8 and 15 were confirmed in Phase 3 — paper 8's
+> authors/venue from the IJDRR record (DOI 10.1016/j.ijdrr.2025.105493), and paper 15 replaced
+> with the same authors' indexed FICC 2025 paper (DOI 10.1007/978-3-031-85363-0_44) since the
+> original ISML 2024 entry had no confirmable DOI. **All 15 citations are now DOI-verified.**
 
 ---
 
@@ -169,13 +172,14 @@ Purely a flight-coordination and suppression algorithm: no cloud backend, no hum
 ## Paper 8: Conceptual Design of a Wildfire Emergency Response System Empowered by Swarms of UAVs
 
 ### Citation
-- **Authors**: TODO(verify) — confirm exact author names and publication month from https://www.sciencedirect.com/science/article/pii/S2212420925003176
-- **Journal/Conference**: ScienceDirect (systems-engineering conceptual design paper)
+- **Authors**: Tavakol Sadrabadi, M., Peiró, J., Innocente, M. S., & Rein, G.
+- **Journal/Conference**: *International Journal of Disaster Risk Reduction*, vol. 124, article 105493 (Elsevier)
 - **Year**: 2025
+- **DOI**: 10.1016/j.ijdrr.2025.105493
 - **Title**: *Conceptual design of a wildfire emergency response system empowered by swarms of unmanned aerial vehicles*
 
 ### Methodology
-A systems-engineering approach that defines the tasks best suited to UAV swarms within a human-centred wildfire emergency response system, spanning software, hardware, human components, and their interfaces.
+A systems-engineering approach that defines the tasks best suited to UAV swarms within a human-centred wildfire emergency response system, specifying its software, hardware, and human components, their interactions, and their interfaces.
 
 ### Key Findings
 - Identifies concrete regulatory and integration barriers to UAV-swarm adoption in emergency response.
@@ -310,20 +314,26 @@ A model-comparison study only: no swarm coordination, no cloud RAG layer, no hum
 
 ---
 
-## Paper 15: A Wireless Sensor Network Application in Forest Fire Early Detection — A Smart and Secure Approach
+## Paper 15: A Smart and Secure Wireless Sensor Network for Early Forest Fire Prediction — An Emulated Scenario Approach
 
 ### Citation
 - **Authors**: Soliman, H., & Haque, A.
-- **Journal/Conference**: *Proc. 2024 Intelligent Systems and Machine Learning Conference (ISML)*, Hyderabad, India, pp. 106–111
-- **Year**: 2024
-- **DOI/ISBN**: TODO(verify) — confirm exact page range and DOI/ISBN from the primary ISML 2024 proceedings record; this entry was located via a secondary citation.
-- **Title**: *A Wireless Sensor Network Application in Forest Fire Early Detection: A Smart and Secure Approach*
+- **Journal/Conference**: *Advances in Information and Communication* (Proc. Future of Information and Communication Conference, FICC 2025), Lecture Notes in Networks and Systems vol. 1284, Springer, Cham
+- **Year**: 2025
+- **DOI**: 10.1007/978-3-031-85363-0_44
+- **Title**: *A Smart and Secure Wireless Sensor Network for Early Forest Fire Prediction: An Emulated Scenario Approach*
+
+> Replaces an earlier non-indexed conference entry by the same authors (ISML 2024, "A Wireless
+> Sensor Network Application in Forest Fire Early Detection: A Smart and Secure Approach") whose
+> DOI / page range could not be confirmed in a primary index. This is the same authors' indexed,
+> DOI-bearing paper on the same theme, per the completion-brief guidance for unverifiable entries.
 
 ### Methodology
-A WSN-based forest-fire detection architecture that emphasises secure data transmission from ground sensors to the base station.
+A WSN-based forest-fire early-prediction architecture emphasising secure data transmission from ground sensors, evaluated in an emulated deployment scenario.
 
 ### Key Findings
 - Proposes a security-hardened ground-sensor-to-base-station pipeline suited to remote, unattended forest deployment.
+- Emulation shows early-prediction feasibility while keeping the sensor-to-base link hardened.
 
 ### Research Gap Identified
 Ground-sensor-only: no aerial component and no generative response planning.
