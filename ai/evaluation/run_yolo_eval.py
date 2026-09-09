@@ -37,8 +37,8 @@ def main() -> dict:
         "detector_backend": backend,
         "dataset": "FLAME" if have_flame else "sample_images (placeholder)",
         "num_images": len(imgs),
-        "mAP@0.5": "PENDING — requires FLAME/FireNet dataset + fine-tuned weights",
-        "mAP@0.5:0.95": "PENDING — requires FLAME/FireNet dataset + fine-tuned weights",
+        "mAP@0.5": "PENDING -- requires FLAME/FireNet dataset + fine-tuned weights",
+        "mAP@0.5:0.95": "PENDING -- requires FLAME/FireNet dataset + fine-tuned weights",
     }
 
     if imgs:
@@ -49,11 +49,11 @@ def main() -> dict:
         report["total_detections"] = detections
         report["note"] = (
             "measured_fps is wall-clock throughput of the PLACEHOLDER detector on "
-            "CPU over sample images — not a Jetson/TensorRT figure and not comparable "
+            "CPU over sample images -- not a Jetson/TensorRT figure and not comparable "
             "to the CV-2 gate (>=30 FPS)."
         )
     else:
-        report["measured_fps"] = "PENDING — no images available"
+        report["measured_fps"] = "PENDING -- no images available"
 
     (OUT_DIR / "last_run.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report

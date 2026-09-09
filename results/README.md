@@ -10,7 +10,7 @@ comes from an actual run of actual code, or it is marked `PENDING` with the reas
 | End-to-end pipeline works | `pytest testing/unit/test_incidents_route.py` — POST incident ⇒ `alerts` row + `response_plans` row created, immediate alert ≤ enriched alert | CI / local |
 | RAG retrieval returns k ranked chunks with non-decreasing true-L2 distance | `pytest testing/unit/test_rag_retrieve.py` | CI / local |
 | Detector output contract (bbox / cls / confidence) holds in every mode | `pytest testing/unit/test_yolo_detector.py` | CI / local |
-| Placeholder-detector throughput on CPU over sample frames | `python -m ai.evaluation.run_yolo_eval` → `results/yolo-metrics/last_run.json` | local |
+| Placeholder-detector throughput on CPU over 4 synthetic sample frames | `python -m ai.evaluation.run_yolo_eval` → `results/yolo-metrics/last_run.json` (≈ 2 fps on this dev box — a *placeholder* figure, **not** the CV-2 gate) | local |
 | Detection → first mock-SMS log line latency | timestamp delta in `logs/alerts.log` after a simulator run | local |
 
 ## PENDING (needs resources this pass does not have)
