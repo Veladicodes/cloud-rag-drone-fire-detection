@@ -8,7 +8,7 @@ This document outlines the week-by-week semester schedule for the research proje
 
 ### Week 1: Literature Review & Sourcing
 - **Goal**: Research historical drone classification models and RAG frameworks.
-- **Tasks**: Source relevant academic publications and draft initial paper summaries.
+- **Tasks**: Source relevant academic publications (5 per researcher, 15 total) and draft initial paper summaries.
 
 ### Week 2: Literature Synthesis & Gap Identification
 - **Goal**: Identify core research gaps in emergency response coordination.
