@@ -18,7 +18,7 @@ This report maps every university faculty requirement to the corresponding file 
 | **Proposed Architecture** | **Compliant** | [docs/architecture/architecture.md](file:///d:/cloud-drone-fire-detection/docs/architecture/architecture.md) | High-Level Architecture, component interactions, incl. the Public/Responder Alert Service layer. |
 | **Technology Stack** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section 12: Technology Stack. |
 | **Dataset Details** | **Compliant** | [docs/research/datasets.md](file:///d:/cloud-drone-fire-detection/docs/research/datasets.md) | Analyzes FLAME & FireNet (sources, splits, limitations). |
-| **Literature Survey (15 papers, 5 / 5 / 5)** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | Fifteen entries, split 5 / 5 / 5 across the three researchers. The five original (unverifiable) citations for papers 1–5 have been **replaced with real, DOI-verified publications** on the same topics; the R1 gap analysis was updated to match. Remaining `TODO(verify)`: paper 2 author list, and field-level items on papers 8 and 15. |
+| **Literature Survey (15 papers, 5 / 5 / 5)** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | Fifteen entries, split 5 / 5 / 5 across the three researchers. The five original (unverifiable) citations for papers 1–5 have been **replaced with real, DOI-verified publications** on the same topics (authors + DOIs confirmed); the R1 gap analysis was updated to match. Remaining `TODO(verify)`: field-level items on papers 8 and 15. |
 | **Research Gap (per researcher)** | **Compliant** | [docs/research/gap-analysis.md](file:///d:/cloud-drone-fire-detection/docs/research/gap-analysis.md) | Three independent per-researcher analyses (R1 papers 1–5, R2 papers 6–10, R3 papers 11–15) in distinct voices, plus a consolidated gap statement and solution summary. |
 | **Human Alerting Mechanism** | **Compliant** | [docs/architecture/alert-recipients.md](file:///d:/cloud-drone-fire-detection/docs/architecture/alert-recipients.md) | Recipient / channel / trigger / content matrix; immediate SMS dispatched in parallel with (not after) RAG; validation gate AL-1 (≤ 15 s). Reflected in both architecture diagrams and ADR-002 addendum. |
 | **Folder Structure** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section: Repository Structure (now includes `data/knowledge-base/` stub). |
@@ -46,13 +46,13 @@ This report maps every university faculty requirement to the corresponding file 
 5. The professor's Review-1 concerns are addressed: the literature survey is now 15 papers split 5 / 5 / 5 with three independent gap analyses, and a concrete human-alerting layer (recipients, channels, triggers, latency gate AL-1) has been added to the architecture, diagrams, and ADRs.
 
 ### **Citation integrity (resolved):**
-- The five original citations for papers 1–5 (Zhao & Martinez 2023; Chen/Patel/Dupont 2024; Al-Mansoori & Kumar 2022; Thompson & Silva 2023; Kim & Nguyen 2024) returned no matching record on an exact-title web search and were judged fabricated. No DOI was ever invented for them. They have been **replaced with real, DOI-verified publications** on the same five topics (multiscale YOLOv8 drone detection; multi-agent RAG for hazard planning; IoT edge computing for environmental monitoring; real-time UAV-fleet wildfire monitoring; DeepSmoke detection+segmentation), and the R1 gap analysis in `gap-analysis.md` was rewritten to reference the new papers. One residual `TODO(verify)` remains on paper 2's author list (its DOI resolves).
+- The five original citations for papers 1–5 (Zhao & Martinez 2023; Chen/Patel/Dupont 2024; Al-Mansoori & Kumar 2022; Thompson & Silva 2023; Kim & Nguyen 2024) returned no matching record on an exact-title web search and were judged fabricated. No DOI was ever invented for them. They have been **replaced with real, DOI-verified publications** on the same five topics (multiscale YOLOv8 drone detection; multi-agent RAG for hazard planning; IoT edge computing for environmental monitoring; real-time UAV-fleet wildfire monitoring; DeepSmoke detection+segmentation), and the R1 gap analysis in `gap-analysis.md` was rewritten to reference the new papers. All five replacements have confirmed authors and resolving DOIs.
 
 ---
 
 ## 3. Recommended Improvements for Review-2
 Upon successful Review-1 panel approval, the team should proceed with these actions:
-1. **Confirm paper 2's author list** (`docs/research/literature-survey.md`) — the DOI (10.1038/s44168-025-00254-1) resolves; only the author names carry `TODO(verify)`. Likewise close the field-level `TODO(verify)` on papers 8 and 15.
+1. **Close the field-level `TODO(verify)` on papers 8 and 15** (`docs/research/literature-survey.md`) — paper 8 needs its confirmed author list/month from the ScienceDirect record; paper 15 needs its exact page range and DOI/ISBN from the primary ISML 2024 proceedings.
 2. **Model Fine-Tuning**: Execute dataset download and augmentations on local compute nodes using YOLOv8 scripts.
 3. **FastAPI Framework Ingestion Code**: Draft the backend ingestion controller classes, set up SQLAlchemy models, and establish connection pools.
 4. **FAISS Local Mocking**: Chunk sample SOP documents into raw texts and write script modules to check query-embedding matching distances.
@@ -82,7 +82,7 @@ Changes applied in the remediation pass driven by `CLAUDE_CODE_MASTER_BRIEF.md`,
 - `docs/research/README.md` now indexes all nine research documents (added objectives, research-questions, methodology, datasets, this report).
 - `rag-response.md`: L2 distance formula corrected to `√Σ(qₖ−vₖ)²`, matching `methodology.md`.
 - Restored `data/knowledge-base/README.md` as a stub, resolving the dangling ADR-002 reference; added the folder to the root README structure.
-- **Citations 1–5 web-verified → none found** (fabricated). No DOI invented. Subsequently **replaced with real, DOI-verified publications** on the same five topics; per-paper Method/Findings/Gap rewritten, R1 gap analysis updated, README references updated, integrity warning downgraded to a resolved note. One `TODO(verify)` remains on paper 2's author list.
+- **Citations 1–5 web-verified → none found** (fabricated). No DOI invented. Subsequently **replaced with real, DOI-verified publications** (confirmed authors + DOIs) on the same five topics; per-paper Method/Findings/Gap rewritten, R1 gap analysis updated, README references updated, integrity warning downgraded to a resolved note.
 
 ### Section 4 — Verification pass
 - Paper count confirmed = 15 (entries numbered 1–15).
@@ -110,7 +110,10 @@ labelled local stand-in (`cloud/README_LOCAL_MODE.md`). Runbook: `RUN_LOCALLY.md
 - **Edge detection** (`ai/models/yolo_detector.py`): pretrained COCO `yolov8n` as a **structural placeholder** (explicitly *not* wildfire-fine-tuned), with a dependency-free STUB detector fallback. Output contract: bbox / cls / confidence.
 - **Dashboard** (`frontend/`): React + Vite — live telemetry map (Leaflet), alert feed, RAG response-plan viewer. Functional, not styled.
 - **Simulator** (`testing/simulate_drone.py`): streams telemetry for N virtual drones and POSTs detections, so the whole pipeline demos with no hardware or dataset.
-- **Tests** (`testing/unit/`): detector contract, RAG retrieval structure, and an end-to-end route test asserting an `alerts` row **and** a `response_plans` row are created with immediate-before-enriched ordering.
+- **Tests** (`testing/unit/`): detector contract, RAG retrieval structure, WebSocket telemetry persistence, Blob-stand-in round-trip, and an end-to-end route test asserting an `alerts` row **and** a `response_plans` row are created with immediate-before-enriched ordering. **9 passing.**
+- **Migrations**: real Alembic setup (`alembic.ini`, `database/migrations/env.py` wired to `Base.metadata` + `DATABASE_URL`, initial autogenerated revision); `alembic upgrade head` builds all five tables. `init_db()`/`create_all` remains the one-step path for the quick demo.
+- **Sample frames** (`testing/sample_images/`): 4 clearly-labelled synthetic placeholder JPEGs (+ `generate.py`) so `run_yolo_eval` yields a real CPU throughput number (mAP stays `PENDING`) and the simulator can feed real files.
+- **`Makefile`**: `setup / index / seed / migrate / backend / sim / test / frontend-build` targets mirroring `RUN_LOCALLY.md`.
 
 ### Mocked / placeholder (and why)
 - **LLM** = `[MOCK LLM OUTPUT]` deterministic text (no API key / no Azure OpenAI). `LLM_MODE=local` tries a small `flan-t5` model; never returns unlabelled mock text.

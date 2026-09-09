@@ -180,10 +180,10 @@ cloud-drone-fire-detection/
 
 ## References
 
-> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). Ref 2's exact author list is `TODO(verify)`; refs 8 and 15 carry field-level `TODO(verify)`.
+> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). Refs 8 and 15 carry field-level `TODO(verify)`.
 
 1. Zhu, W., Niu, S., Yue, J., & Zhou, Y. (2025). Multiscale wildfire and smoke detection in complex drone forest environments based on YOLOv8. *Scientific Reports*, 15. https://doi.org/10.1038/s41598-025-86239-w
-2. [TODO(verify) authors] (2025). A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation. *npj Climate Action*, 4. https://doi.org/10.1038/s44168-025-00254-1
+2. Xie, Y., Jiang, B., Mallick, T., Bergerson, J. D., Hutchison, J. K., Verner, D. R., Branham, J., Alexander, M. R., Ross, R. B., Feng, Y., Levy, L.-A., Su, W., & Taylor, C. J. (2025). A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation (MARSHA). *npj Climate Action*. https://doi.org/10.1038/s44168-025-00254-1
 3. Roostaei, J., & Wager, Y. Z. (2023). IoT-based edge computing (IoTEC) for improved environmental monitoring. *Sustainable Computing: Informatics and Systems*, 39, 100870. https://doi.org/10.1016/j.suscom.2023.100870
 4. Bailon-Ruiz, R., Bit-Monnot, A., & Lacroix, S. (2022). Real-time wildfire monitoring with a fleet of UAVs. *Robotics and Autonomous Systems*, 152, 104071. https://doi.org/10.1016/j.robot.2022.104071
 5. Khan, S., Muhammad, K., Hussain, T., Del Ser, J., Cuzzolin, F., Bhattacharyya, S., Akhtar, Z., & de Albuquerque, V. H. C. (2021). DeepSmoke: Deep learning model for smoke detection and segmentation in outdoor environments. *Expert Systems with Applications*, 182, 115125. https://doi.org/10.1016/j.eswa.2021.115125

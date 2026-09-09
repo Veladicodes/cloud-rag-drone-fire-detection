@@ -28,8 +28,9 @@ frontend/.vite/
 .DS_Store
 Thumbs.db
 
-# --- results: keep READMEs + .gitkeep, ignore machine-written run outputs ---
+# --- results: keep READMEs + .gitkeep + last_run.json, ignore other run outputs ---
 results/yolo-metrics/*
 results/rag-metrics/*
 results/latency/*
 !results/*/.gitkeep
+!results/yolo-metrics/last_run.json
