@@ -1,0 +1,20 @@
+DOWNWIND EVACUATION ZONING (ILLUSTRATIVE — NOT AN OFFICIAL SOP)
+
+Define the evacuation area as an arc extending downwind from the incident, not a
+circle. The head of a wind-driven fire threatens the downwind sector first and
+fastest; flanking and backing spread is slower.
+
+Sizing the arc:
+- Centre the arc on the incident coordinates and orient it along the reported
+  wind direction.
+- Base radius: about 1.5 km for light wind on level ground.
+- Add roughly 1 km of radius for every 20 km/h of sustained wind.
+- Extend further where continuous crown fuel, steep upslope terrain, or observed
+  spotting lie in the downwind sector.
+- Widen the arc angle when wind direction is variable or a frontal shift is
+  forecast.
+
+Prioritise notification of occupied structures, campgrounds, and any single-road
+communities inside the arc, then routes that would be cut by fire crossing them.
+Re-issue the zone whenever wind direction shifts by more than about 30 degrees or
+wind speed steps up a category.
