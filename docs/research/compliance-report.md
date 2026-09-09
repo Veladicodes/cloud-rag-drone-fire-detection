@@ -18,7 +18,7 @@ This report maps every university faculty requirement to the corresponding file 
 | **Proposed Architecture** | **Compliant** | [docs/architecture/architecture.md](file:///d:/cloud-drone-fire-detection/docs/architecture/architecture.md) | High-Level Architecture, component interactions. |
 | **Technology Stack** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section 12: Technology Stack. |
 | **Dataset Details** | **Compliant** | [docs/research/datasets.md](file:///d:/cloud-drone-fire-detection/docs/research/datasets.md) | Analyzes FLAME & FireNet. |
-| **Literature Survey** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | In-depth analysis of five publications. |
+| **Literature Survey** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | In-depth analysis of fifteen publications, split 5 / 5 / 5 across the three researchers. |
 | **Research Gap** | **Compliant** | [docs/research/gap-analysis.md](file:///d:/cloud-drone-fire-detection/docs/research/gap-analysis.md) | Logical structure of Current Project $\to$ Gap $\to$ Solution. |
 | **Folder Structure** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section 14: Repository Structure. |
 | **Work Distribution** | **Compliant** | [docs/management/work-distribution.md](file:///d:/cloud-drone-fire-detection/docs/management/work-distribution.md) | Responsibilities, deliverables for each researcher. |
