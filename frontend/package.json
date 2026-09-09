@@ -1,0 +1,22 @@
+{
+  "name": "cloud-drone-fire-dashboard",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Operator dashboard for the local prototype — telemetry map, alert feed, response-plan viewer.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
