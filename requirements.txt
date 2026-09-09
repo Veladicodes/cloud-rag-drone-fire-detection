@@ -1,0 +1,35 @@
+# Top-level dependency set for the Phase-2 local prototype.
+# Backend + RAG + tests. The React dashboard has its own frontend/package.json.
+#
+# Heavy, optional ML deps (ultralytics, torch, transformers) are listed under
+# "optional" — the code degrades to labelled stub/mock modes without them, so
+# CI and a first demo run work on the core set alone.
+
+# --- core: backend + storage + db ---
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0
+pydantic-settings>=2.2
+python-multipart>=0.0.9
+httpx>=0.27
+numpy>=1.26
+
+# --- core: RAG vector index ---
+faiss-cpu>=1.8
+
+# --- core: tests ---
+pytest>=8.0
+
+# --- optional: real embeddings (falls back to hash embedder if absent) ---
+sentence-transformers>=2.7 ; python_version >= "3.9"
+
+# --- optional: real edge detector (falls back to STUB detector if absent) ---
+# ultralytics>=8.2
+
+# --- optional: real local LLM (falls back to [MOCK LLM OUTPUT] if absent) ---
+# transformers>=4.40
+# torch>=2.2
+
+# --- optional: RAG orchestration via LangChain (the pipeline also runs without it) ---
+# langchain>=0.2
+# langchain-community>=0.2
