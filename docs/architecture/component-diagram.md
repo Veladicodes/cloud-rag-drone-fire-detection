@@ -49,10 +49,19 @@ classDiagram
         +PlanPresenter
     }
 
+    class AlertService {
+        <<Azure Communication Services>>
+        +SendImmediateSMS()
+        +SendEnrichedPush()
+        +RegisterRecipient()
+    }
+
     UAVClientNode --> FastAPIGateway : Telemetry & Incident Alerts
     FastAPIGateway --> RelationalDB : Persists Log Records
     FastAPIGateway --> MediaStore : Archives JPG Frames
     FastAPIGateway --> RAGService : Requests Response Plan
     RAGService --> RelationalDB : Saves Generated Checklist
     FastAPIGateway --> OperatorDashboard : Streams Real-Time Coordinates
+    FastAPIGateway --> AlertService : Triggers immediate alert (parallel, no RAG wait)
+    RAGService --> AlertService : Sends enriched plan
 ```
