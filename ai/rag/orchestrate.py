@@ -66,7 +66,7 @@ def _generate_mock(incident: dict, chunks: list[dict], insufficient: bool) -> st
     radius = 1.5 + wind / 20.0
     return textwrap.dedent(
         f"""\
-        [MOCK LLM OUTPUT] — deterministic stand-in for Azure OpenAI GPT-4o. NOT real generation.
+        [MOCK LLM OUTPUT] -- deterministic stand-in for Azure OpenAI GPT-4o. NOT real generation.
 
         ## Response Checklist (grounded in: {cited})
 
