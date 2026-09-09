@@ -132,22 +132,23 @@ The conceptual architecture separates tasks into key operational layers:
 ---
 
 ## Repository Structure
-The repository is structured to prioritize research planning and architecture:
+Phase-1 was research planning and architecture; Phase-2 adds a **working local
+prototype** (no Docker / no Azure account / no API keys — every cloud service has
+a local stand-in, mapped in [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md)).
+See [`RUN_LOCALLY.md`](RUN_LOCALLY.md) to run it.
 
 ```
 cloud-drone-fire-detection/
-├── docs/                      # General project documentation
-│   ├── research/              # Academic survey, gap analysis, methodology, and objectives
-│   ├── architecture/          # Conceptual system structure, data flows, and deployment
-│   ├── management/            # Timeline, milestones, and work distribution
-│   └── adr/                   # Architecture Decision Records (ADR-001 to ADR-003)
-├── backend/                   # FastAPI backend planning files
-├── frontend/                  # React dashboard mockups planning
-├── ai/                        # AI training workflows and RAG index specifications
-├── database/                  # SQL and Vector schema descriptions
-├── cloud/                     # Azure resource mapping
-├── testing/                   # Test plans and validation matrices
-├── results/                   # Metric evaluation templates
+├── docs/                      # Research docs, ADRs, architecture, management plans
+│   ├── research/  architecture/  management/  adr/
+├── backend/                   # FastAPI app: main.py, api/ routes, core/ config+db, services/
+├── frontend/                  # React + Vite dashboard: map, alert feed, plan viewer
+├── ai/                        # models/yolo_detector.py, rag/ (ingest·retrieve·orchestrate), evaluation/
+├── database/                  # SQLAlchemy models.py, migrations/, seed.py
+├── data/knowledge-base/       # SOP source docs for the RAG/FAISS index (+ sample_sops/)
+├── cloud/                     # storage_local.py (Blob stand-in), README_LOCAL_MODE.md
+├── testing/                   # simulate_drone.py, unit/ tests, conftest.py
+├── results/                   # measured vs PENDING metrics (machine-written run outputs)
 └── presentation/              # Slide structures and poster designs
 ```
 
@@ -178,8 +179,21 @@ cloud-drone-fire-detection/
 ---
 
 ## References
-1. Zhao, L., & Martinez, J. (2023). Real-Time Wildfire Detection on UAVs Using Custom YOLO Architectures. *IEEE Transactions on Geoscience and Remote Sensing*, 61, 1-12.
-2. Chen, H., Patel, S., & Dupont, Y. (2024). Retrieval-Augmented Generation (RAG) for Automated Crisis SOP Synthesis. *Journal of Emergency Management & Artificial Intelligence*, 18(2), 145-158.
-3. Al-Mansoori, M., & Kumar, R. (2022). Edge-Cloud Collaborative Computing Architectures for Environmental Monitoring. *ACM Transactions on Internet of Things*, 3(4), 210-224.
-4. Thompson, G., & Silva, F. (2023). Autonomous UAV Flight Path Planning for Dynamic Wildfire Tracking. *Robotics and Autonomous Systems*, 162, 104-115.
-5. Kim, D., & Nguyen, T. (2024). Deep Learning Methods for Amorphous Smoke Segmentation in Forest Canopies. *International Journal of Wildland Fire*, 33(1), 45-56.
+
+> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). Ref 2's exact author list is `TODO(verify)`; refs 8 and 15 carry field-level `TODO(verify)`.
+
+1. Zhu, W., Niu, S., Yue, J., & Zhou, Y. (2025). Multiscale wildfire and smoke detection in complex drone forest environments based on YOLOv8. *Scientific Reports*, 15. https://doi.org/10.1038/s41598-025-86239-w
+2. [TODO(verify) authors] (2025). A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation. *npj Climate Action*, 4. https://doi.org/10.1038/s44168-025-00254-1
+3. Roostaei, J., & Wager, Y. Z. (2023). IoT-based edge computing (IoTEC) for improved environmental monitoring. *Sustainable Computing: Informatics and Systems*, 39, 100870. https://doi.org/10.1016/j.suscom.2023.100870
+4. Bailon-Ruiz, R., Bit-Monnot, A., & Lacroix, S. (2022). Real-time wildfire monitoring with a fleet of UAVs. *Robotics and Autonomous Systems*, 152, 104071. https://doi.org/10.1016/j.robot.2022.104071
+5. Khan, S., Muhammad, K., Hussain, T., Del Ser, J., Cuzzolin, F., Bhattacharyya, S., Akhtar, Z., & de Albuquerque, V. H. C. (2021). DeepSmoke: Deep learning model for smoke detection and segmentation in outdoor environments. *Expert Systems with Applications*, 182, 115125. https://doi.org/10.1016/j.eswa.2021.115125
+6. Diaz-Vilor, C., Lozano, A., & Jafarkhani, H. (2025). A Reinforcement Learning Approach for Wildfire Tracking with UAV Swarms. *IEEE Transactions on Wireless Communications*.
+7. Tzoumas, G., Salina, L., McConville, A., Richardson, T., & Hauert, S. (2024). Extinguishing Wildfires in Large Scale Scenarios Using Swarms of UAVs. In *Swarm Intelligence (ANTS 2024)*, Springer LNCS vol. 14987. https://doi.org/10.1007/978-3-031-70932-6_6
+8. Conceptual design of a wildfire emergency response system empowered by swarms of unmanned aerial vehicles (2025). *ScienceDirect*. Article S2212420925003176. [TODO(verify) author names]
+9. De Rango, A., Furnari, L., Cortale, F., Senatore, A., & Mendicino, G. (2025). Wildfire Early Warning System Based on a Smart CO2 Sensors Network. *Sensors (MDPI)*, 25(7), 2012. https://doi.org/10.3390/s25072012
+10. Mowbray, F., et al. (2024). A systematic review of the use of mobile alerting to inform the public about emergencies and the factors that influence the public response. *Journal of Contingencies and Crisis Management*, 32, e12499. https://doi.org/10.1111/1468-5973.12499
+11. Rey, W. P., Adalin, S. A. S., Calanog, K. R. L., & Jimenez, G. W. R. (2024). Mamamayan: A Mobile Community-based Emergency Reporting and Notification System for the City of Makati in the Philippines. In *Proc. 2023 5th ICSED*, ACM, pp. 35-41.
+12. Béchard, P., & Marquez Ayala, O. (2024). Reducing hallucination in structured outputs via Retrieval-Augmented Generation. In *Proc. 2024 NAACL-HLT, Industry Track*, pp. 228-238. https://doi.org/10.18653/v1/2024.naacl-industry.19
+13. Vazquez, G., Zhai, S., & Yang, M. (2026). Edge-Friendly UAV Wildfire Smoke and Flame Detection Using Transfer Learning-Enhanced Lightweight Deep Learning Models. *MDPI* (PMC13210558).
+14. Titu, M. F. S., Pavel, M. A., Michael, G. K. O., Babar, H., Aman, U., & Khan, R. (2024). Real-Time Fire Detection: Integrating Lightweight Deep Learning Models on Drones with Edge Computing. *Drones (MDPI)*, 8(9), Article 483. https://doi.org/10.3390/drones8090483
+15. Soliman, H., & Haque, A. (2024). A Wireless Sensor Network Application in Forest Fire Early Detection: A Smart and Secure Approach. In *Proc. 2024 ISML Conference*, Hyderabad, India, pp. 106-111. [TODO(verify) DOI/ISBN]

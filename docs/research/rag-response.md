@@ -53,9 +53,9 @@ When a fire incident is registered:
 1. **Metadata Aggregation**: The system fetches current wind speed/direction, local temperature, and fuel levels at the incident's coordinates.
 2. **Search Query Formulation**: The system generates a structured query: 
    *"Wildfire containment procedures under wind speed [W] km/h and high dry fuel density."*
-3. **Similarity Search**: The query is embedded ($\vec{q} = E(q)$) and matched against the FAISS vector index using L2 distance:
+3. **Similarity Search**: The query is embedded ($\vec{q} = E(q)$) and matched against the FAISS vector index using L2 (Euclidean) distance. FAISS `IndexFlatL2` ranks by this quantity, consistent with the formula given in [`methodology.md`](methodology.md):
 
-$$d(\vec{q}, \vec{v}) = \sum_{k=1}^{d} (q_k - v_k)^2$$
+$$d(\vec{q}, \vec{v}) = \sqrt{\sum_{k=1}^{d} (q_k - v_k)^2}$$
 
 4. **Context Construction**: The top $k$ (typically $k=3$) document chunks with the lowest distances are fetched.
 

@@ -14,7 +14,7 @@ This directory contains research planning documentation, literature surveys, arc
 
 ### 2. Core Research Documentation
 - [Research Overview](research/README.md): Index of research briefs and methodologies.
-- [Literature Survey](research/literature-survey.md): Complete survey of five key academic publications on UAV flight paths, YOLO detection, and RAG architectures.
+- [Literature Survey](research/literature-survey.md): Complete survey of fifteen academic publications (5 per researcher, 15 total) on UAV swarms, YOLO edge detection, sensor-network early warning, human alerting, and RAG architectures.
 - [Gap Analysis](research/gap-analysis.md): Logical structure outlining the Current Project Scope $\to$ Identified Research Gaps $\to$ Proposed Solutions.
 - [YOLOv8 Detection Brief](research/yolo-detection.md): Analytical breakdown of machine learning loss parameters and edge hardware compatibility.
 - [RAG Response Brief](research/rag-response.md): Explanation of text embeddings, FAISS search formulas, and LangChain prompt layouts.

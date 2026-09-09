@@ -1,0 +1,17 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0f1311; color: #e8ebe4; }
+header { padding: 12px 18px; border-bottom: 1px solid #2b322c; }
+header h1 { font-size: 1.05rem; margin: 0; }
+header small { color: #9aa39c; }
+.grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; padding: 12px; }
+.panel { border: 1px solid #2b322c; border-radius: 8px; background: #161b18; padding: 10px; }
+.panel h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .06em; color: #9aa39c; margin: 0 0 8px; }
+#map { height: 460px; border-radius: 6px; }
+.feed { max-height: 240px; overflow: auto; font-size: 0.85rem; }
+.feed .row { padding: 6px 4px; border-bottom: 1px solid #232a25; }
+.tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 999px; border: 1px solid currentColor; }
+.tag.immediate { color: #f2792f; }
+.tag.enriched { color: #5cbfa7; }
+pre.plan { white-space: pre-wrap; font-size: 0.82rem; background: #10140f; padding: 10px; border-radius: 6px; max-height: 360px; overflow: auto; }
+select, button { background: #1c2320; color: inherit; border: 1px solid #2b322c; border-radius: 5px; padding: 4px 8px; }
