@@ -1,0 +1,12 @@
+{
+  "task": "classify",
+  "dataset": "FLAME frame-level Fire/No_Fire",
+  "base": "yolov8n-cls.pt",
+  "epochs": 10,
+  "imgsz": 224,
+  "fraction": 1.0,
+  "val_top1_acc": 0.9949487447738647,
+  "weights": "ai\\models\\weights\\wildfire_yolov8n_cls.pt",
+  "run_dir": "runs\\flame_cls",
+  "note": "FLAME frame set is classification-only; this is a whole-frame classifier, NOT a real bounding-box detector."
+}

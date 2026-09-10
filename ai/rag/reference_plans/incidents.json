@@ -1,0 +1,26 @@
+[
+  {
+    "id": "inc_high_wind_dry",
+    "incident": {"lat": 34.0722, "lon": -118.2437, "detected_class": "smoke", "confidence": 0.92,
+                 "wind_speed_kmh": 26, "wind_dir_deg": 210, "temperature_c": 34, "fuel_dryness": "high"},
+    "reference_file": "inc_high_wind_dry.md"
+  },
+  {
+    "id": "inc_light_wind_moderate",
+    "incident": {"lat": 40.15, "lon": -111.65, "detected_class": "fire", "confidence": 0.81,
+                 "wind_speed_kmh": 8, "wind_dir_deg": 90, "temperature_c": 24, "fuel_dryness": "moderate"},
+    "reference_file": "inc_light_wind_moderate.md"
+  },
+  {
+    "id": "inc_strong_wind_crown",
+    "incident": {"lat": 38.58, "lon": -120.55, "detected_class": "fire", "confidence": 0.95,
+                 "wind_speed_kmh": 32, "wind_dir_deg": 260, "temperature_c": 37, "fuel_dryness": "high"},
+    "reference_file": "inc_strong_wind_crown.md"
+  },
+  {
+    "id": "inc_moderate_grass",
+    "incident": {"lat": 44.05, "lon": -121.31, "detected_class": "smoke", "confidence": 0.63,
+                 "wind_speed_kmh": 14, "wind_dir_deg": 315, "temperature_c": 28, "fuel_dryness": "moderate"},
+    "reference_file": "inc_moderate_grass.md"
+  }
+]

@@ -18,7 +18,7 @@ This report maps every university faculty requirement to the corresponding file 
 | **Proposed Architecture** | **Compliant** | [docs/architecture/architecture.md](file:///d:/cloud-drone-fire-detection/docs/architecture/architecture.md) | High-Level Architecture, component interactions, incl. the Public/Responder Alert Service layer. |
 | **Technology Stack** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section 12: Technology Stack. |
 | **Dataset Details** | **Compliant** | [docs/research/datasets.md](file:///d:/cloud-drone-fire-detection/docs/research/datasets.md) | Analyzes FLAME & FireNet (sources, splits, limitations). |
-| **Literature Survey (15 papers, 5 / 5 / 5)** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | Fifteen entries, split 5 / 5 / 5 across the three researchers. The five original (unverifiable) citations for papers 1–5 have been **replaced with real, DOI-verified publications** on the same topics (authors + DOIs confirmed); the R1 gap analysis was updated to match. Remaining `TODO(verify)`: field-level items on papers 8 and 15. |
+| **Literature Survey (15 papers, 5 / 5 / 5)** | **Compliant** | [docs/research/literature-survey.md](file:///d:/cloud-drone-fire-detection/docs/research/literature-survey.md) | Fifteen entries, split 5 / 5 / 5 across the three researchers. The five original (unverifiable) citations for papers 1–5 have been **replaced with real, DOI-verified publications** on the same topics (authors + DOIs confirmed); the R1 gap analysis was updated to match. Papers 8 and 15 closed in Phase 3 (paper 15 replaced with the same authors' indexed FICC 2025 paper). **All 15 citations are DOI-verified.** |
 | **Research Gap (per researcher)** | **Compliant** | [docs/research/gap-analysis.md](file:///d:/cloud-drone-fire-detection/docs/research/gap-analysis.md) | Three independent per-researcher analyses (R1 papers 1–5, R2 papers 6–10, R3 papers 11–15) in distinct voices, plus a consolidated gap statement and solution summary. |
 | **Human Alerting Mechanism** | **Compliant** | [docs/architecture/alert-recipients.md](file:///d:/cloud-drone-fire-detection/docs/architecture/alert-recipients.md) | Recipient / channel / trigger / content matrix; immediate SMS dispatched in parallel with (not after) RAG; validation gate AL-1 (≤ 15 s). Reflected in both architecture diagrams and ADR-002 addendum. |
 | **Folder Structure** | **Compliant** | [README.md](file:///d:/cloud-drone-fire-detection/README.md) | Section: Repository Structure (now includes `data/knowledge-base/` stub). |
@@ -52,7 +52,7 @@ This report maps every university faculty requirement to the corresponding file 
 
 ## 3. Recommended Improvements for Review-2
 Upon successful Review-1 panel approval, the team should proceed with these actions:
-1. **Close the field-level `TODO(verify)` on papers 8 and 15** (`docs/research/literature-survey.md`) — paper 8 needs its confirmed author list/month from the ScienceDirect record; paper 15 needs its exact page range and DOI/ISBN from the primary ISML 2024 proceedings.
+1. *(Closed in Phase 3.)* Papers 8 and 15 citation `TODO(verify)` markers resolved — see the Phase-3 Completion Log below.
 2. **Model Fine-Tuning**: Execute dataset download and augmentations on local compute nodes using YOLOv8 scripts.
 3. **FastAPI Framework Ingestion Code**: Draft the backend ingestion controller classes, set up SQLAlchemy models, and establish connection pools.
 4. **FAISS Local Mocking**: Chunk sample SOP documents into raw texts and write script modules to check query-embedding matching distances.
@@ -125,3 +125,85 @@ labelled local stand-in (`cloud/README_LOCAL_MODE.md`). Runbook: `RUN_LOCALLY.md
 Real mAP/FPS on FLAME (CV-1/CV-2), measured bandwidth delta (CL-1), retrieval-recall
 set (CG-1), hallucination scoring with a real LLM (CG-2), and AL-1 against a real
 SMS provider. Tracked in `results/README.md`.
+
+---
+
+## 6. Phase-3 Completion Log (real data, real LLM, IaC)
+
+Driven by `CLAUDE_CODE_COMPLETION_BRIEF.md`. Closes three of the four "still
+pending" items above; the fourth (real Azure *deployment*) has its code written
+but its `terraform apply` is credential-gated and not run from this repo.
+
+**Config for the measured numbers:** local SQLite + filesystem Blob, CPU-only
+(Ryzen 7 5800H, no GPU), `LLM_MODE=gemini` (`gemini-2.5-flash`),
+`YOLO_MODE=finetuned`.
+
+### §1 Datasets — real, on disk (not committed; git-ignored)
+- **FLAME** `data/flame/` — frame-level Fire/No_Fire classification set:
+  Training 39,375 (Fire 25,018 / No_Fire 14,357) + Test 8,617 = **47,992**
+  (matches `datasets.md`). 254×254 RGB, **classification-only, no bounding boxes**.
+- **FireNet** `data/firenet/` — **502** images + 502 Pascal-VOC XML (class `fire`),
+  train 412 / val 90. `datasets.md` corrected 12,380 → 502; FLAME citation fixed
+  to Shamsoshoara et al. 2020 (DOI 10.21227/qad6-r683).
+
+### §2 Real YOLO — no longer PENDING
+- **Detector** `ai/models/weights/wildfire_yolov8n.pt` — `yolov8n` fine-tuned 50
+  epochs on FireNet boxes. **mAP@0.5 = 0.733** → **CV-1 (≥0.88) NOT MET**;
+  mAP@0.5:0.95 = 0.349; **CPU FPS = 37.3** → CV-2 (≥30) met on CPU (gate is
+  Jetson+TensorRT). The CV-1 miss is a documented *data-scale* limit (412 imgs,
+  1 class, CPU) — analysed in `results/README.md` and `ADR-001` Outcome Addendum,
+  **not rounded up**.
+- **FLAME classifier** `wildfire_yolov8n_cls.pt` — whole-frame Fire/No_Fire
+  classifier (FLAME has no boxes), *not* compared to CV-1. Seeded val top-1 =
+  0.995; held-out `Test/` top-1 = 0.718 (real generalization drop).
+- Deviations from Phase-1 decisions, both recorded in `ADR-001`: (a) detector
+  trained on FireNet not FLAME, because FLAME's frame set has no boxes;
+  (b) seeded random stratified split instead of "chronological by flight",
+  because this FLAME sub-item carries no flight timestamps.
+
+### §3 Real LLM — no longer PENDING
+- `LLM_MODE=gemini` branch in `ai/rag/orchestrate.py` (current `google-genai`
+  SDK; the brief's `google-generativeai` is deprecated). `thinking_budget=0`.
+  `mock`/`local` kept as no-key fallbacks; bounded prompt + `INSUFFICIENT_CONTEXT`
+  unchanged (TASK reworded for per-line SOP citations, constraints not loosened).
+- **RQ3 / CG-2 measured** (`ai/rag/evaluate_rag.py`, 4 incidents vs hand-written
+  expert plans in `ai/rag/reference_plans/`): mean BERTScore F1 = **0.827**;
+  **hallucinated-source rate = 0.0%** → **CG-2 (≤1.0%) MET**; citation coverage
+  25/27 claim lines; 0/4 `INSUFFICIENT_CONTEXT`. Demo-scale (5-file SOP corpus).
+
+### §4 Citations — both `TODO(verify)` closed
+- Paper 8 → Tavakol Sadrabadi, Peiró, Innocente & Rein (2025), *Int. J. Disaster
+  Risk Reduction* 124:105493, DOI 10.1016/j.ijdrr.2025.105493.
+- Paper 15 → replaced the non-indexed ISML 2024 entry with the same authors'
+  indexed Soliman & Haque (2025), FICC 2025, Springer LNNS 1284, DOI
+  10.1007/978-3-031-85363-0_44. **All 15 citations are DOI-verified.**
+
+### §5 Azure — infrastructure written; provisioning handed off
+- `cloud/terraform/` — full Terraform for the `deployment-overview.md` topology
+  (RG, VNet + 3 subnets + DB-subnet NSG, Azure SQL Serverless + private endpoint,
+  Storage + Blob container + Hot→Cool@30d, Container Apps env + backend app with
+  system-assigned MI, Static Web App, Key Vault + secrets + access policy).
+- `cloud/storage_azure.py` (real `azure-storage-blob`, same signatures) +
+  `cloud/storage.py` dispatcher (`STORAGE_MODE=local|azure`); `pipeline.py` call
+  sites unchanged. `backend/Dockerfile` (+ msodbcsql18). `/health` reports
+  `storage_mode` + `database`.
+- `cloud/DEPLOY.md` — exact `az` / `terraform` / `docker` / SWA runbook incl.
+  running Alembic against real Azure SQL and the 5-table check.
+- **Not executed:** no `az` / `terraform` CLI on the build machine, and
+  provisioning spends real credit — this is the student's to run. `README_LOCAL_MODE.md`
+  has a "deployed resources" table to fill after `terraform apply`.
+
+### Deliberately still mocked / pending (documented scope boundaries)
+- **Azure Communication Services SMS** stays mocked even in the Azure deploy
+  (`DEPLOY.md` → "Left mocked"): a real SMS number needs extra verification / per-
+  message cost. The alert *ordering* guarantee (immediate before RAG, gate AL-1)
+  is unchanged and still tested.
+- **CV-1 ≥ 88%** needs FLAME box annotations + GPU. **CV-2 on hardware** needs a
+  Jetson + TensorRT engine. **CL-1** needs a raw-video baseline. **CG-1** needs a
+  labelled retrieval-relevance set. All tracked in `results/README.md`.
+
+### Verification
+- Full suite: **9/9** `pytest testing/unit` (local SQLite, mock LLM / stub YOLO
+  via `conftest.py`). Live `LLM_MODE=gemini` end-to-end re-checked via TestClient:
+  real Gemini plan, `llm_mode=gemini`, immediate mock SMS before RAG, enriched
+  after — ordering intact.

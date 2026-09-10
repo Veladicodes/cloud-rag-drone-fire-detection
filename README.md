@@ -131,24 +131,36 @@ The conceptual architecture separates tasks into key operational layers:
 
 ---
 
-## Repository Structure
-Phase-1 was research planning and architecture; Phase-2 adds a **working local
-prototype** (no Docker / no Azure account / no API keys — every cloud service has
-a local stand-in, mapped in [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md)).
-See [`RUN_LOCALLY.md`](RUN_LOCALLY.md) to run it.
+## Repository Structure & project status
+
+- **Phase 1** — research planning, 15-paper survey, architecture, ADRs, human-alert layer.
+- **Phase 2** — working local prototype (FastAPI + SQLite/Alembic + FAISS RAG + React), 9/9 tests.
+- **Phase 3** — **real** data, LLM, and cloud IaC:
+  - **YOLO** fine-tuned on real data (`YOLO_MODE=finetuned`): FireNet-trained detector
+    (`mAP@0.5 = 0.733`, CPU `37.3 FPS`) + a FLAME frame classifier. CV-1 (≥ 0.88) is
+    **not met** — an honest data-scale limit, analysed in [`results/README.md`](results/README.md)
+    and [`docs/adr/ADR-001.md`](docs/adr/ADR-001.md).
+  - **RAG** with real generation (`LLM_MODE=gemini`, Google Gemini Flash). RQ3/CG-2 measured:
+    `0.0%` hallucinated-source rate, BERTScore F1 `0.83` vs expert plans.
+  - **Azure** — full Terraform ([`cloud/terraform/`](cloud/terraform/)) + real
+    `storage_azure.py` / Azure-SQL code paths + [`cloud/DEPLOY.md`](cloud/DEPLOY.md) runbook.
+    Provisioning is credential-gated (run it yourself).
+
+Every cloud service still has a **local default** stand-in (`STORAGE_MODE` / `LLM_MODE` /
+`YOLO_MODE` config flags) — see [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md).
+Run locally: [`RUN_LOCALLY.md`](RUN_LOCALLY.md). Deploy: [`cloud/DEPLOY.md`](cloud/DEPLOY.md).
 
 ```
 cloud-drone-fire-detection/
-├── docs/                      # Research docs, ADRs, architecture, management plans
-│   ├── research/  architecture/  management/  adr/
-├── backend/                   # FastAPI app: main.py, api/ routes, core/ config+db, services/
+├── docs/                      # Research docs, ADRs (ADR-001 has a Phase-3 outcome addendum), architecture, mgmt
+├── backend/                   # FastAPI: main.py, api/ routes, core/ config+db, services/, Dockerfile
 ├── frontend/                  # React + Vite dashboard: map, alert feed, plan viewer
-├── ai/                        # models/yolo_detector.py, rag/ (ingest·retrieve·orchestrate), evaluation/
-├── database/                  # SQLAlchemy models.py, migrations/, seed.py
-├── data/knowledge-base/       # SOP source docs for the RAG/FAISS index (+ sample_sops/)
-├── cloud/                     # storage_local.py (Blob stand-in), README_LOCAL_MODE.md
-├── testing/                   # simulate_drone.py, unit/ tests, conftest.py
-├── results/                   # measured vs PENDING metrics (machine-written run outputs)
+├── ai/                        # models/ (yolo_detector, prepare_*, train_yolo), rag/ (ingest·retrieve·orchestrate·evaluate), evaluation/
+├── database/                  # SQLAlchemy models.py, Alembic migrations/, seed.py
+├── data/                      # knowledge-base/ (SOPs, committed); flame/ + firenet/ (downloaded, git-ignored)
+├── cloud/                     # storage_local|azure|dispatcher, terraform/, DEPLOY.md, README_LOCAL_MODE.md
+├── testing/                   # simulate_drone.py, unit/ tests, sample_images/, conftest.py
+├── results/                   # MEASURED vs PENDING metrics + machine-written run outputs
 └── presentation/              # Slide structures and poster designs
 ```
 
@@ -180,7 +192,7 @@ cloud-drone-fire-detection/
 
 ## References
 
-> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). Refs 8 and 15 carry field-level `TODO(verify)`.
+> Note: the five original citations 1–5 were unverifiable via web search and have been replaced with real, DOI-verified papers on the same topics (see `docs/research/literature-survey.md`). All 15 references are now DOI-verified.
 
 1. Zhu, W., Niu, S., Yue, J., & Zhou, Y. (2025). Multiscale wildfire and smoke detection in complex drone forest environments based on YOLOv8. *Scientific Reports*, 15. https://doi.org/10.1038/s41598-025-86239-w
 2. Xie, Y., Jiang, B., Mallick, T., Bergerson, J. D., Hutchison, J. K., Verner, D. R., Branham, J., Alexander, M. R., Ross, R. B., Feng, Y., Levy, L.-A., Su, W., & Taylor, C. J. (2025). A RAG-Based Multi-Agent LLM System for Natural Hazard Resilience and Adaptation (MARSHA). *npj Climate Action*. https://doi.org/10.1038/s44168-025-00254-1
@@ -189,11 +201,11 @@ cloud-drone-fire-detection/
 5. Khan, S., Muhammad, K., Hussain, T., Del Ser, J., Cuzzolin, F., Bhattacharyya, S., Akhtar, Z., & de Albuquerque, V. H. C. (2021). DeepSmoke: Deep learning model for smoke detection and segmentation in outdoor environments. *Expert Systems with Applications*, 182, 115125. https://doi.org/10.1016/j.eswa.2021.115125
 6. Diaz-Vilor, C., Lozano, A., & Jafarkhani, H. (2025). A Reinforcement Learning Approach for Wildfire Tracking with UAV Swarms. *IEEE Transactions on Wireless Communications*.
 7. Tzoumas, G., Salina, L., McConville, A., Richardson, T., & Hauert, S. (2024). Extinguishing Wildfires in Large Scale Scenarios Using Swarms of UAVs. In *Swarm Intelligence (ANTS 2024)*, Springer LNCS vol. 14987. https://doi.org/10.1007/978-3-031-70932-6_6
-8. Conceptual design of a wildfire emergency response system empowered by swarms of unmanned aerial vehicles (2025). *ScienceDirect*. Article S2212420925003176. [TODO(verify) author names]
+8. Tavakol Sadrabadi, M., Peiró, J., Innocente, M. S., & Rein, G. (2025). Conceptual design of a wildfire emergency response system empowered by swarms of unmanned aerial vehicles. *International Journal of Disaster Risk Reduction*, 124, 105493. https://doi.org/10.1016/j.ijdrr.2025.105493
 9. De Rango, A., Furnari, L., Cortale, F., Senatore, A., & Mendicino, G. (2025). Wildfire Early Warning System Based on a Smart CO2 Sensors Network. *Sensors (MDPI)*, 25(7), 2012. https://doi.org/10.3390/s25072012
 10. Mowbray, F., et al. (2024). A systematic review of the use of mobile alerting to inform the public about emergencies and the factors that influence the public response. *Journal of Contingencies and Crisis Management*, 32, e12499. https://doi.org/10.1111/1468-5973.12499
 11. Rey, W. P., Adalin, S. A. S., Calanog, K. R. L., & Jimenez, G. W. R. (2024). Mamamayan: A Mobile Community-based Emergency Reporting and Notification System for the City of Makati in the Philippines. In *Proc. 2023 5th ICSED*, ACM, pp. 35-41.
 12. Béchard, P., & Marquez Ayala, O. (2024). Reducing hallucination in structured outputs via Retrieval-Augmented Generation. In *Proc. 2024 NAACL-HLT, Industry Track*, pp. 228-238. https://doi.org/10.18653/v1/2024.naacl-industry.19
 13. Vazquez, G., Zhai, S., & Yang, M. (2026). Edge-Friendly UAV Wildfire Smoke and Flame Detection Using Transfer Learning-Enhanced Lightweight Deep Learning Models. *MDPI* (PMC13210558).
 14. Titu, M. F. S., Pavel, M. A., Michael, G. K. O., Babar, H., Aman, U., & Khan, R. (2024). Real-Time Fire Detection: Integrating Lightweight Deep Learning Models on Drones with Edge Computing. *Drones (MDPI)*, 8(9), Article 483. https://doi.org/10.3390/drones8090483
-15. Soliman, H., & Haque, A. (2024). A Wireless Sensor Network Application in Forest Fire Early Detection: A Smart and Secure Approach. In *Proc. 2024 ISML Conference*, Hyderabad, India, pp. 106-111. [TODO(verify) DOI/ISBN]
+15. Soliman, H., & Haque, A. (2025). A Smart and Secure Wireless Sensor Network for Early Forest Fire Prediction: An Emulated Scenario Approach. In *Advances in Information and Communication (FICC 2025)*, LNNS vol. 1284, Springer. https://doi.org/10.1007/978-3-031-85363-0_44
