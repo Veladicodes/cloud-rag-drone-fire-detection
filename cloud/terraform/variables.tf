@@ -60,6 +60,12 @@ variable "backend_image" {
   default     = "mcr.microsoft.com/k8se/quickstart:latest"
 }
 
+variable "recreate_db" {
+  type        = string
+  default     = "false"
+  description = "Set to \"true\" for ONE deploy to drop+recreate the DB schema, then back to false."
+}
+
 variable "frontend_origin" {
   type        = string
   default     = ""

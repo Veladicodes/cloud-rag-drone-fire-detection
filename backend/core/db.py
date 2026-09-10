@@ -34,6 +34,9 @@ def init_db() -> None:
     """
     import database.models  # noqa: F401  (register mappers)
 
+    from backend.core.config import get_settings
+    if get_settings().recreate_db:
+        Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 

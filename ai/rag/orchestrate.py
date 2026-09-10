@@ -166,7 +166,7 @@ def generate_plan(incident: dict, k: int = 3) -> dict:
         if local is not None:
             return _result(local, "local", chunks, insufficient)
 
-    fallback_mode = "mock" if mode == "mock" else f"mock(fallback from {mode})"
+    fallback_mode = "mock" if mode == "mock" else "mock(fallback)"
     return _result(_generate_mock(incident, chunks, insufficient), fallback_mode, chunks, insufficient)
 
 
