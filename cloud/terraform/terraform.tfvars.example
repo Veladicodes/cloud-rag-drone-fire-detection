@@ -1,18 +1,21 @@
-# Copy to terraform.tfvars and fill in. terraform.tfvars is git-ignored.
-# Secrets are better passed as environment variables:
+# Copy to terraform.tfvars (git-ignored) and fill in.
+# Secrets go via environment variables, NOT this file:
 #   export TF_VAR_sql_admin_password='...'
 #   export TF_VAR_gemini_api_key='...'
 
-subscription_id = "00000000-0000-0000-0000-000000000000"
-location        = "eastus"
+subscription_id = "8fb3faa8-4e94-4e42-8a36-5b559e3618a4"
+location        = "centralindia"
+swa_location    = "eastasia"          # Static Web App region (short allowed list)
 prefix          = "cdfd"
 
+alert_email = "adithya.a2023@vitstudent.ac.in"   # $100 budget alerts land here
+operator_ip = ""                                  # set to your public IP for the one-off DB migration, then clear
+
 sql_admin_login = "cdfdadmin"
-# sql_admin_password  -> TF_VAR_sql_admin_password
-# gemini_api_key      -> TF_VAR_gemini_api_key
+# sql_admin_password -> TF_VAR_sql_admin_password
+# gemini_api_key     -> TF_VAR_gemini_api_key
 
-# After the first image push, set this to <acr>.azurecr.io/cdfd-backend:latest
-# backend_image = "..."
-
-# After the Static Web App exists, set this so the backend CORS allows it
+# After the first `az acr build`, set:
+# backend_image = "cdfdXXXXX acr.azurecr.io/cdfd-backend:1"
+# After the Static Web App exists, set so backend CORS allows it:
 # frontend_origin = "https://cdfdXXXXX-web.azurestaticapps.net"

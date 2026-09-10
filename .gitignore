@@ -54,3 +54,5 @@ cloud/terraform/*.tfstate*
 cloud/terraform/terraform.tfvars
 cloud/terraform/.terraform.lock.hcl
 frontend/.env.production
+cloud/terraform/tfplan
+cloud/terraform/*.tfplan
