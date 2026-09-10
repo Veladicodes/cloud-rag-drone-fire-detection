@@ -17,16 +17,31 @@ config flag — this file records the mapping. Provisioning is in
 | **Frontend host** | `vite` dev server | Terraform `azurerm_static_web_app`; `npm run build` → SWA CLI deploy | see `DEPLOY.md` §4 |
 | **Key Vault / Managed Identity** | `.env` file | Terraform `azurerm_key_vault` + secrets `gemini-api-key`, `database-url`; backend MI granted `Get`/`List` + `Storage Blob Data Contributor` | automatic once deployed |
 
-## Deployed resources (fill in after a real `terraform apply`)
+## Deployed resources (live — `terraform apply` on 2026-09-10)
+
+29 resources in resource group **`cdfdzupn5-rg`** (`centralindia`, except the
+Container App environment in `eastasia` — Central India has 0 quota for those on
+this student sub; Static Web App in `eastasia`).
 
 | Output | Value |
 | :--- | :--- |
-| `resource_group` | _TODO after deploy_ |
-| `backend_url` | _TODO_ |
-| `frontend_url` | _TODO_ |
-| `sql_server_fqdn` | _TODO_ |
-| `storage_blob_endpoint` | _TODO_ |
-| `key_vault_uri` | _TODO_ |
+| `resource_group` | `cdfdzupn5-rg` |
+| `backend_url` | `https://cdfdzupn5-backend.bluewater-83023317.eastasia.azurecontainerapps.io` |
+| `frontend_url` | `https://lively-meadow-05cf7d800.6.azurestaticapps.net` |
+| `sql_server_fqdn` | `cdfdzupn5-sql.database.windows.net` (db `cdfd`, Serverless GP_S_Gen5_1, auto-pause 60 min) |
+| `storage_blob_endpoint` | `https://cdfdzupn5sa.blob.core.windows.net/` (container `incident-snapshots`, Hot→Cool @30d) |
+| `key_vault_name` | `cdfdzupn5-kv` (secrets: `gemini-api-key`, `database-url`) |
+| `acr_login_server` | `cdfdzupn5acr.azurecr.io` (Basic; delete after the image is in the app) |
+| `app_insights_name` | `cdfdzupn5-ai` (workspace-based, 20% sampling) |
+| `log_analytics` | `cdfdzupn5-law` (daily cap 0.2 GB) |
+| Budget | `cdfdzupn5-budget` — $100, alerts 50 / 80 / 100 % → `adithya.a2023@vitstudent.ac.in` |
+
+**Backend image status:** the Container App currently runs the placeholder
+`mcr.microsoft.com/k8se/quickstart` image. The student subscription blocks **ACR
+Tasks** (`TasksOperationsNotAllowed`), so `az acr build` cannot be used — the real
+`backend/Dockerfile` image must be built via GitHub Actions
+(`.github/workflows/deploy-backend.yml`) or a local Docker build, then
+`terraform apply -var backend_image=cdfdzupn5acr.azurecr.io/cdfd-backend:<tag>`.
 
 ## Rule
 Every file that names an Azure service carries a `# LOCAL STAND-IN FOR:` or

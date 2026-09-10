@@ -13,9 +13,10 @@ FULL_ACR="$("$AZ" acr list -g "$RG" --query "[0].name" -o tsv)"
 echo "Deleting ACR $FULL_ACR ..."
 "$AZ" acr delete -g "$RG" -n "$FULL_ACR" --yes -o none
 
-echo "Dropping ACR-linked resources from terraform state so 'apply' won't recreate them..."
-for addr in azurerm_container_registry.acr azurerm_role_assignment.backend_acr; do
-  "$TF" -chdir="$TFDIR" state rm "$addr" 2>/dev/null || true
-done
+echo "Dropping the ACR resource from terraform state so 'apply' won't recreate it..."
+"$TF" -chdir="$TFDIR" state rm azurerm_container_registry.acr 2>/dev/null || true
+# NOTE: the Container App keeps a copy of the ACR admin password in a secret; it
+# stays running on the cached image. If you later re-add the ACR, run
+# `terraform apply` and it will refresh the secret.
 echo "Done. The Container App keeps running the cached image."
 echo "To push a new image later: git checkout cloud/terraform/main.tf && terraform apply, then az acr build."
