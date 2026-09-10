@@ -1,18 +1,15 @@
 """Edge YOLO detector wrapper.
 
-IMPORTANT: in this prototype the detector runs **pretrained COCO `yolov8n.pt`**,
-NOT a wildfire-fine-tuned model. It is a structural placeholder so the rest of
-the pipeline (incident creation, alerting, RAG context) can be built and tested
-end-to-end against realistic-shaped output. Real fine-tuning on FLAME/FireNet
-per ADR-001 / `docs/research/yolo-detection.md` is Review-2 work.
-
 Modes (YOLO_MODE):
-    auto -> ultralytics yolov8n.pt if importable, else STUB
-    stub -> deterministic synthetic detection (no ML deps), clearly labelled
+    finetuned -> ai/models/weights/wildfire_yolov8n.pt (FireNet-trained detector,
+                 single class 'fire'). This is the real Phase-3 detector.
+    auto      -> pretrained COCO yolov8n.pt (STRUCTURAL PLACEHOLDER, not
+                 wildfire-fine-tuned) if ultralytics is importable, else STUB.
+    stub      -> deterministic synthetic detection (no ML deps), clearly labelled.
 
 Output contract (matches the fields `database.models.Incident` expects):
     [{ "bbox": [x1, y1, x2, y2], "cls": "smoke"|"fire", "confidence": float,
-       "backend": "yolov8n-coco-placeholder" | "stub" }]
+       "backend": "wildfire-yolov8n-finetuned" | "yolov8n-coco-placeholder" | "stub" }]
 """
 from __future__ import annotations
 
@@ -48,12 +45,22 @@ class _StubDetector:
 
 
 class _UltralyticsDetector:
-    backend = "yolov8n-coco-placeholder"
+    """Runs an ultralytics model. `weights=None` -> pretrained COCO placeholder;
+    a real path -> the fine-tuned single-class ('fire') wildfire detector."""
 
-    def __init__(self) -> None:
+    def __init__(self, weights: str | None = None) -> None:
         from ultralytics import YOLO
 
-        self._model = YOLO("yolov8n.pt")  # auto-downloads once to repo root
+        if weights:
+            self._model = YOLO(weights)
+            self._names = self._model.names  # {0: 'fire'}
+            self.backend = "wildfire-yolov8n-finetuned"
+            self._placeholder = False
+        else:
+            self._model = YOLO("yolov8n.pt")  # auto-downloads once to repo root
+            self._names = None
+            self.backend = "yolov8n-coco-placeholder"
+            self._placeholder = True
 
     def detect(self, image_ref: str | bytes) -> list[dict]:
         import io
@@ -70,9 +77,13 @@ class _UltralyticsDetector:
         for res in self._model.predict(src, verbose=False):
             for box in res.boxes:
                 cls_id = int(box.cls[0])
+                if self._placeholder:
+                    cls = _COCO_PROXY.get(cls_id, "smoke")
+                else:
+                    cls = (self._names or {}).get(cls_id, "fire")
                 out.append({
                     "bbox": [float(v) for v in box.xyxy[0].tolist()],
-                    "cls": _COCO_PROXY.get(cls_id, "smoke"),
+                    "cls": cls,
                     "confidence": round(float(box.conf[0]), 3),
                     "backend": self.backend,
                 })
@@ -89,11 +100,25 @@ def get_detector():
 
     from backend.core.config import get_settings
 
-    mode = get_settings().yolo_mode.lower()
+    s = get_settings()
+    mode = s.yolo_mode.lower()
+
+    if mode == "finetuned":
+        wpath = s.abspath(s.finetuned_weights)
+        if wpath.exists():
+            try:
+                _cached = _UltralyticsDetector(weights=str(wpath))
+                log.info("YOLO detector: %s (%s)", _cached.backend, wpath.name)
+                return _cached
+            except Exception as exc:  # noqa: BLE001
+                log.warning("finetuned weights load failed (%s) -> placeholder", exc)
+        else:
+            log.warning("YOLO_MODE=finetuned but %s missing -> placeholder", wpath)
+
     if mode != "stub":
         try:
             _cached = _UltralyticsDetector()
-            log.info("YOLO detector: %s (PLACEHOLDER — not wildfire-fine-tuned)", _cached.backend)
+            log.info("YOLO detector: %s (PLACEHOLDER - not wildfire-fine-tuned)", _cached.backend)
             return _cached
         except Exception as exc:  # noqa: BLE001
             log.warning("ultralytics unavailable (%s) -> STUB detector", exc)

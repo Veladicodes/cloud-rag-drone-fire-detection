@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from ai.rag.orchestrate import generate_plan
 from backend.services.alert_service import send_enriched_plan, send_immediate_alert
-from cloud.storage_local import save_blob
+from cloud.storage import save_blob  # local stand-in or real Azure Blob per STORAGE_MODE
 from database.models import Incident, ResponsePlan
 
 log = logging.getLogger("pipeline")

@@ -1,28 +1,79 @@
 # Results & Metrics
 
-**Rule (from the implementation brief): no fabricated numbers.** Every value here
-comes from an actual run of actual code, or it is marked `PENDING` with the reason.
+**Rule (from the briefs): no fabricated numbers.** Every value here comes from an
+actual run of actual code on real data, or it is marked `PENDING` with the reason.
+Reproduce commands are given so a teammate or the examiner can re-run them.
 
-## Measured (local prototype)
+Config used for the Phase-3 measured numbers: **local** (SQLite + filesystem Blob),
+**`LLM_MODE=gemini`** (`gemini-2.5-flash`), **`YOLO_MODE=finetuned`**, CPU-only
+(AMD Ryzen 7 5800H, no GPU).
 
-| Metric | How it is produced | Where |
-| :--- | :--- | :--- |
-| End-to-end pipeline works | `pytest testing/unit/test_incidents_route.py` — POST incident ⇒ `alerts` row + `response_plans` row created, immediate alert ≤ enriched alert | CI / local |
-| RAG retrieval returns k ranked chunks with non-decreasing true-L2 distance | `pytest testing/unit/test_rag_retrieve.py` | CI / local |
-| Detector output contract (bbox / cls / confidence) holds in every mode | `pytest testing/unit/test_yolo_detector.py` | CI / local |
-| Placeholder-detector throughput on CPU over 4 synthetic sample frames | `python -m ai.evaluation.run_yolo_eval` → `results/yolo-metrics/last_run.json` (≈ 2 fps on this dev box — a *placeholder* figure, **not** the CV-2 gate) | local |
-| Detection → first mock-SMS log line latency | timestamp delta in `logs/alerts.log` after a simulator run | local |
+---
 
-## PENDING (needs resources this pass does not have)
+## MEASURED
+
+### 1. YOLO detection — FireNet, real bounding boxes
+
+| Metric | Value | Gate | Verdict |
+| :--- | ---: | :--- | :--- |
+| mAP@0.5 | **0.733** | CV-1 ≥ 0.88 | **NOT MET** |
+| mAP@0.5:0.95 | 0.349 | — | — |
+| precision / recall | 0.766 / 0.739 | — | — |
+| throughput (CPU, 512 px) | **37.3 FPS** | CV-2 ≥ 30 | met on CPU (gate is defined for Jetson+TensorRT — see note) |
+
+- Weights: `ai/models/weights/wildfire_yolov8n.pt` — `yolov8n.pt` fine-tuned **50 epochs, imgsz 512** on the FireNet YOLO train split (412 images, single class `fire`).
+- Reproduce: `python -m ai.models.train_yolo detect --epochs 50 --imgsz 512` then `python -m ai.evaluation.run_yolo_eval --task detect`.
+- Held-out set: FireNet `validation/` (90 images), converted to YOLO format by `ai/models/prepare_firenet.py`.
+- **Why CV-1 is missed, stated plainly:** FireNet gives only **412** training images of **one** class at low resolution; 50 CPU epochs. The 88% target assumed FLAME-scale (47,992-frame) box-annotated data, which FLAME's *classification* sub-item does not provide. FireNet is a documented *secondary* set (`docs/research/datasets.md`). Closing CV-1 needs FLAME box annotations (from its segmentation-mask sub-item) + GPU training. This is a **data-scale** shortfall, not a framework problem — the architecture (ADR-001) trained cleanly and hit the speed target.
+- **CV-2 note:** 37.3 FPS is real but measured on a desktop CPU. The gate is written for a Jetson Orin with a TensorRT engine; on-hardware benchmarking is still open (see PENDING).
+
+### 2. FLAME frame classifier (approximation — NOT a detector)
+
+| Metric | Value |
+| :--- | ---: |
+| top-1 acc, seeded val split (same distribution as train) | **0.995** |
+| top-1 acc, held-out `Test/` folder (separate FLAME release) | **0.718** |
+
+- Weights: `ai/models/weights/wildfire_yolov8n_cls.pt` — `yolov8n-cls.pt` fine-tuned **10 epochs, imgsz 224**, 4000 images/class subsample.
+- Reproduce: `FLAME_MAX_PER_CLASS=4000 python -m ai.models.train_yolo cls --epochs 10 --imgsz 224` then `python -m ai.evaluation.run_yolo_eval --task cls`.
+- FLAME's frame-level set is **classification-only** (folder = label, no boxes), so this is a whole-frame Fire/No_Fire classifier used as an approximation. **It is not compared to the CV-1 mAP gate.**
+- The 0.995 → 0.718 drop from val to `Test/` is real generalization loss: `Test/` is a genuinely separate FLAME release (different flights/scenes), and matches FLAME's own documented dry-conifer / scene bias (`datasets.md`). 0.72 on a balanced 2-class set is still well above the 0.50 chance line.
+- Split deviation (no flight timestamps in this sub-item → seeded random stratified split instead of chronological) is recorded in `docs/adr/ADR-001.md` → Outcome Addendum.
+
+### 3. RAG grounding / RQ3 — real Gemini output vs expert reference plans
+
+| Metric | Value | Gate | Verdict |
+| :--- | ---: | :--- | :--- |
+| mean BERTScore F1 vs 4 hand-written expert plans | **0.827** | — | — |
+| hallucinated-source rate (cited SOP file not in the retrieved set) | **0.0%** | CG-2 ≤ 1.0% | **MET** |
+| inline SOP-citation coverage (claim lines carrying a `(NN_*.txt)` cite) | **25 / 27** | — | — |
+| `INSUFFICIENT_CONTEXT` returns | 0 / 4 | — | — |
+
+- Reproduce: `LLM_MODE=gemini python -m ai.rag.evaluate_rag` → `results/rag-metrics/rag_eval.json`.
+- Model: `gemini-2.5-flash` via `google-genai`, `thinking_budget=0`, k=4 retrieved chunks, the unchanged bounded prompt (`ai/rag/orchestrate.py`).
+- Reference set: `ai/rag/reference_plans/` — 4 incidents + hand-written "ideal" plans grounded only in the 5 sample SOPs.
+- **Caveat:** 4 test incidents over a 5-file SOP corpus is a *demo-scale* evaluation, not a production benchmark. `bert-score` uses `distilbert-base-uncased`.
+
+### 4. End-to-end pipeline (unchanged from Phase 2, re-verified Phase 3)
+
+| Check | How |
+| :--- | :--- |
+| POST incident ⇒ `alerts` row + `response_plans` row; immediate alert timestamp ≤ enriched | `pytest testing/unit/test_incidents_route.py` (9/9 suite passes) |
+| Live `LLM_MODE=gemini` end-to-end (real API) | POST → immediate mock SMS → real Gemini plan (`llm_mode=gemini`, grounded, cited) → enriched mock SMS/push |
+| RAG retrieval returns k ranked chunks, non-decreasing true-L2 | `pytest testing/unit/test_rag_retrieve.py` |
+
+---
+
+## PENDING (genuinely blocked)
 
 | Metric | Blocked on |
 | :--- | :--- |
-| Real YOLO mAP@0.5 / mAP@0.5:0.95 (gate CV-1) | FLAME + FireNet dataset download and fine-tuning per ADR-001 |
-| Real edge FPS on Jetson + TensorRT (gate CV-2) | physical/emulated Jetson hardware |
-| Bandwidth reduction ≥ 70 % (gate CL-1) | a measured raw-video baseline to compare against |
-| RAG retrieval recall ≥ 90 % (gate CG-1) | a labelled query→SOP relevance set |
-| Hallucination rate ≤ 1 % (gate CG-2) | a real LLM (`LLM_MODE=azure`) + a scored test-prompt set; the current pipeline runs `[MOCK LLM OUTPUT]` |
-| AL-1 (detection → SMS ≤ 15 s) against a *real* provider | Azure Communication Services credentials; the local number is mock-dispatch only |
+| CV-1 mAP@0.5 ≥ 88% | FLAME box annotations (segmentation-mask sub-item → boxes) + GPU training; FireNet alone is too small |
+| CV-2 on real hardware | a physical/emulated Jetson Orin + a TensorRT engine (CPU FPS 37.3 is a proxy only) |
+| CL-1 bandwidth reduction ≥ 70% | a measured raw-video streaming baseline to compare the metadata channel against |
+| CG-1 retrieval recall ≥ 90% | a labelled query→SOP relevance set (only the 4-incident grounding eval exists) |
+| AL-1 against a real SMS provider | Azure Communication Services number; kept mocked on purpose (`cloud/DEPLOY.md` → "Left mocked") |
+| Real Azure deployment reachable | `terraform apply` + container/SWA deploy from `cloud/DEPLOY.md` — IaC written, provisioning is credential-gated and not run from this repo |
 
-Subfolders `yolo-metrics/`, `rag-metrics/`, `latency/` hold machine-written run
-outputs (git-ignored except for this README and `.gitkeep`).
+Machine-written run outputs live in `yolo-metrics/` and `rag-metrics/`
+(git-ignored except `last_run.json`, `train_*.json`, `rag_eval.json`, and this README).

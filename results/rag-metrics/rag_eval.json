@@ -1,0 +1,95 @@
+{
+  "config": {
+    "llm_mode": "gemini",
+    "gemini_model": "gemini-2.5-flash",
+    "k": 4,
+    "n_incidents": 4,
+    "n_scored_with_real_llm": 4
+  },
+  "mean_bertscore_f1": 0.8271,
+  "mean_hallucinated_source_rate": 0.0,
+  "insufficient_context_count": 0,
+  "total_uncited_claim_lines": 2,
+  "total_cited_claim_lines": 25,
+  "gate_CG_2": "hallucination rate <= 1.0% under test prompts (milestones.md)",
+  "per_incident": [
+    {
+      "id": "inc_high_wind_dry",
+      "llm_mode": "gemini",
+      "returned_insufficient": false,
+      "retrieved_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "cited_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "hallucinated_sources": [],
+      "hallucinated_source_rate": 0.0,
+      "cited_claim_lines": 11,
+      "uncited_claim_lines": 0,
+      "bertscore_f1": 0.8396
+    },
+    {
+      "id": "inc_light_wind_moderate",
+      "llm_mode": "gemini",
+      "returned_insufficient": false,
+      "retrieved_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "cited_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "hallucinated_sources": [],
+      "hallucinated_source_rate": 0.0,
+      "cited_claim_lines": 6,
+      "uncited_claim_lines": 0,
+      "bertscore_f1": 0.8352
+    },
+    {
+      "id": "inc_strong_wind_crown",
+      "llm_mode": "gemini",
+      "returned_insufficient": false,
+      "retrieved_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "cited_sources": [
+        "01_initial_size_up.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "hallucinated_sources": [],
+      "hallucinated_source_rate": 0.0,
+      "cited_claim_lines": 5,
+      "uncited_claim_lines": 1,
+      "bertscore_f1": 0.8219
+    },
+    {
+      "id": "inc_moderate_grass",
+      "llm_mode": "gemini",
+      "returned_insufficient": false,
+      "retrieved_sources": [
+        "01_initial_size_up.txt",
+        "04_lces_safety.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "cited_sources": [
+        "01_initial_size_up.txt",
+        "05_dispatch_staging.txt"
+      ],
+      "hallucinated_sources": [],
+      "hallucinated_source_rate": 0.0,
+      "cited_claim_lines": 3,
+      "uncited_claim_lines": 1,
+      "bertscore_f1": 0.8118
+    }
+  ]
+}
