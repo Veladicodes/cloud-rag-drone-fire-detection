@@ -1,8 +1,8 @@
 # Backend container for Azure Container Apps.
-# Build from the REPO ROOT:  docker build -f backend/Dockerfile -t cdfd-backend .
+# Build from the REPO ROOT:  az acr build -r <acr> -t cdfd-backend:1 -f backend/Dockerfile .
 FROM python:3.11-slim
 
-# ODBC Driver 18 for SQL Server (needed for mssql+pyodbc against Azure SQL)
+# ODBC Driver 18 for SQL Server (mssql+pyodbc against Azure SQL)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl gnupg ca-certificates unixodbc-dev gcc g++ \
     && curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
@@ -11,15 +11,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt backend/requirements.txt ai/requirements.txt ./reqs/
-RUN pip install --no-cache-dir -r reqs/requirements.txt pyodbc azure-storage-blob azure-identity
+
+COPY requirements.txt ./requirements.txt
+# CPU-only torch (sentence-transformers dep) keeps the image ~1.5 GB smaller.
+# The backend needs FastAPI + SQLAlchemy + FAISS + sentence-transformers (from
+# requirements.txt) plus the Azure + Gemini client libs. It does NOT need
+# ultralytics / bert-score (those are training/eval only).
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
+ && pip install --no-cache-dir -r requirements.txt \
+      pyodbc azure-storage-blob azure-identity google-genai
 
 COPY backend/ ./backend/
 COPY database/ ./database/
 COPY ai/ ./ai/
 COPY cloud/ ./cloud/
+COPY data/knowledge-base/ ./data/knowledge-base/
 COPY alembic.ini ./
 
+# Bake the embedding model + build the FAISS SOP index at build time so the
+# container starts instantly and needs no network for retrieval.
+ENV HF_HOME=/app/.hf
+RUN python -c "from sentence_transformers import SentenceTransformer as S; S('sentence-transformers/all-mpnet-base-v2')" \
+ && python -m ai.rag.ingest
+
 EXPOSE 8000
-# init_db() also runs on startup; for Azure SQL run `alembic upgrade head` as a one-off first (see cloud/DEPLOY.md).
+# backend.main lifespan runs init_db() (create_all) on startup -> tables appear on
+# first boot. `alembic upgrade head` can also be run as a one-off (cloud/DEPLOY.md).
 CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

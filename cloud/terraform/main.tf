@@ -214,7 +214,7 @@ resource "azurerm_key_vault" "kv" {
   sku_name                   = "standard"
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
-  enable_rbac_authorization  = false
+  rbac_authorization_enabled = false
   tags                       = local.tags
 }
 
@@ -251,17 +251,21 @@ resource "azurerm_container_registry" "acr" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku                 = "Basic"
-  admin_enabled       = false
+  admin_enabled       = true  # express Container App envs can't use MI for ACR pull
   tags                = local.tags
 }
 
 # ------------------------------------------------------- Container Apps ---------
+# Central India has a 0 quota for Container App Environments on this student sub,
+# so the environment (and only the environment) lives in var.aca_location. A VNet
+# is single-region, so this Consumption environment runs public - SQL/Storage/KV
+# stay reachable via firewall rules + Managed Identity, and the VNet/NSG remain as
+# the documented network design. (Recorded in cloud/README_LOCAL_MODE.md.)
 resource "azurerm_container_app_environment" "cae" {
   name                       = "${local.name}-cae"
-  location                   = azurerm_resource_group.rg.location
+  location                   = var.aca_location
   resource_group_name        = azurerm_resource_group.rg.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
-  infrastructure_subnet_id   = azurerm_subnet.backend.id
 }
 
 resource "azurerm_container_app" "backend" {
@@ -272,9 +276,15 @@ resource "azurerm_container_app" "backend" {
 
   identity { type = "SystemAssigned" }
 
+  secret {
+    name  = "acr-password"
+    value = azurerm_container_registry.acr.admin_password
+  }
+
   registry {
-    server   = azurerm_container_registry.acr.login_server
-    identity = "System"
+    server               = azurerm_container_registry.acr.login_server
+    username             = azurerm_container_registry.acr.admin_username
+    password_secret_name = "acr-password"
   }
 
   ingress {
@@ -335,12 +345,6 @@ resource "azurerm_key_vault_access_policy" "backend" {
 resource "azurerm_role_assignment" "backend_blob" {
   scope                = azurerm_storage_account.sa.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azurerm_container_app.backend.identity[0].principal_id
-}
-
-resource "azurerm_role_assignment" "backend_acr" {
-  scope                = azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
   principal_id         = azurerm_container_app.backend.identity[0].principal_id
 }
 

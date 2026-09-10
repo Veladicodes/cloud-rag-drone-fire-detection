@@ -56,3 +56,4 @@ cloud/terraform/.terraform.lock.hcl
 frontend/.env.production
 cloud/terraform/tfplan
 cloud/terraform/*.tfplan
+cloud/terraform/.sqlpw
