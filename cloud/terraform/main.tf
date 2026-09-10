@@ -1,9 +1,9 @@
-# Provisions the topology designed in docs/architecture/deployment-overview.md:
-#   VNet (frontend / backend / database subnets) · Azure SQL Serverless ·
-#   Storage Account + Blob (Hot -> Cool after 30 days) · Container Apps env +
-#   backend app · Static Web App (frontend) · Key Vault · system-assigned
-#   Managed Identity wired to Key Vault.  SMS (Azure Communication Services) is
-#   intentionally NOT provisioned — see cloud/DEPLOY.md section "left mocked".
+# Provisions the topology from docs/architecture/deployment-overview.md, tuned for a
+# $100 Azure-for-Students cap (see /CLAUDE.md). Everything here is free-tier,
+# serverless, scale-to-zero, or (ACR) deleted right after use.
+#
+#   NO private endpoints / App Gateway / NAT / Firewall / OpenAI / premium SKUs.
+#   Azure Communication Services (SMS) stays MOCKED (cloud/DEPLOY.md).
 
 data "azurerm_client_config" "current" {}
 
@@ -15,13 +15,38 @@ resource "random_string" "suffix" {
 
 locals {
   name = "${var.prefix}${random_string.suffix.result}"
-  tags = { project = "cloud-drone-fire-detection", managed_by = "terraform" }
+  tags = { project = "cloud-drone-fire-detection", managed_by = "terraform", budget = "students-100usd" }
 }
 
 resource "azurerm_resource_group" "rg" {
   name     = "${local.name}-rg"
   location = var.location
   tags     = local.tags
+}
+
+# ---------------------------------------------------------------- cost guard ---
+# $100 subscription budget with e-mail alerts. Free.
+resource "azurerm_consumption_budget_subscription" "cap" {
+  name            = "${local.name}-budget"
+  subscription_id = "/subscriptions/${var.subscription_id}"
+  amount          = 100
+  time_grain      = "Annually"
+
+  time_period {
+    start_date = formatdate("YYYY-MM-01'T'00:00:00'Z'", timestamp())
+  }
+
+  dynamic "notification" {
+    for_each = [50, 80, 100]
+    content {
+      enabled        = true
+      threshold      = notification.value
+      operator       = "GreaterThanOrEqualTo"
+      threshold_type = "Actual"
+      contact_emails = [var.alert_email]
+    }
+  }
+  lifecycle { ignore_changes = [time_period] }
 }
 
 # ---------------------------------------------------------------- networking ---
@@ -44,7 +69,7 @@ resource "azurerm_subnet" "backend" {
   name                 = "backend"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.20.2.0/23"] # Container Apps needs a /23
+  address_prefixes     = ["10.20.2.0/23"] # Container Apps Consumption env needs a /23
   delegation {
     name = "aca"
     service_delegation {
@@ -55,20 +80,19 @@ resource "azurerm_subnet" "backend" {
 }
 
 resource "azurerm_subnet" "database" {
-  name                              = "database"
-  resource_group_name               = azurerm_resource_group.rg.name
-  virtual_network_name              = azurerm_virtual_network.vnet.name
-  address_prefixes                  = ["10.20.4.0/24"]
-  private_endpoint_network_policies  = "Enabled"
+  name                 = "database"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.20.4.0/24"]
 }
 
+# NSG documents the intent (DB tier reachable only from the backend subnet).
 resource "azurerm_network_security_group" "database" {
   name                = "${local.name}-db-nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  # Database subnet only accepts traffic from the backend subnet.
   security_rule {
-    name                       = "allow-backend-only"
+    name                       = "allow-backend-subnet"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -76,18 +100,7 @@ resource "azurerm_network_security_group" "database" {
     source_address_prefix      = "10.20.2.0/23"
     source_port_range          = "*"
     destination_address_prefix = "10.20.4.0/24"
-    destination_port_ranges    = ["1433", "443"]
-  }
-  security_rule {
-    name                       = "deny-all-inbound"
-    priority                   = 4096
-    direction                  = "Inbound"
-    access                     = "Deny"
-    protocol                   = "*"
-    source_address_prefix      = "*"
-    source_port_range          = "*"
-    destination_address_prefix = "*"
-    destination_port_range     = "*"
+    destination_port_ranges    = ["1433"]
   }
   tags = local.tags
 }
@@ -105,7 +118,7 @@ resource "azurerm_mssql_server" "sql" {
   version                       = "12.0"
   administrator_login           = var.sql_admin_login
   administrator_login_password  = var.sql_admin_password
-  public_network_access_enabled = true # keep true for first migration; flip to false once the private endpoint is verified
+  public_network_access_enabled = true # no private endpoint on this budget; firewall-gated below
   minimum_tls_version           = "1.2"
   tags                          = local.tags
 }
@@ -113,26 +126,28 @@ resource "azurerm_mssql_server" "sql" {
 resource "azurerm_mssql_database" "db" {
   name                        = "cdfd"
   server_id                   = azurerm_mssql_server.sql.id
-  sku_name                    = "GP_S_Gen5_1" # Serverless, General Purpose, 1 vCore
-  auto_pause_delay_in_minutes = 60
+  sku_name                    = "GP_S_Gen5_1" # Serverless, GP, 1 vCore
+  auto_pause_delay_in_minutes = 60            # pauses -> ~$0 when idle
   min_capacity                = 0.5
-  max_size_gb                 = 32
+  max_size_gb                 = 2             # demo data is tiny; storage is billed per GB
   storage_account_type        = "Local"
   tags                        = local.tags
 }
 
-resource "azurerm_private_endpoint" "sql" {
-  name                = "${local.name}-sql-pe"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.database.id
-  private_service_connection {
-    name                           = "sql"
-    private_connection_resource_id = azurerm_mssql_server.sql.id
-    subresource_names              = ["sqlServer"]
-    is_manual_connection           = false
-  }
-  tags = local.tags
+# Allow other Azure services (the Container App) + the operator's IP for migrations.
+resource "azurerm_mssql_firewall_rule" "azure_services" {
+  name             = "AllowAzureServices"
+  server_id        = azurerm_mssql_server.sql.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "0.0.0.0"
+}
+
+resource "azurerm_mssql_firewall_rule" "operator" {
+  count            = var.operator_ip == "" ? 0 : 1
+  name             = "operator"
+  server_id        = azurerm_mssql_server.sql.id
+  start_ip_address = var.operator_ip
+  end_ip_address   = var.operator_ip
 }
 
 # --------------------------------------------------------- Blob storage ---------
@@ -170,6 +185,26 @@ resource "azurerm_storage_management_policy" "lifecycle" {
   }
 }
 
+# ------------------------------------------------ Log Analytics + App Insights --
+resource "azurerm_log_analytics_workspace" "law" {
+  name                = "${local.name}-law"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  daily_quota_gb      = 0.2 # hard cap so Container Apps logs cannot run up a bill
+}
+
+resource "azurerm_application_insights" "ai" {
+  name                = "${local.name}-ai"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  workspace_id        = azurerm_log_analytics_workspace.law.id
+  application_type    = "web"
+  sampling_percentage = 20
+  tags                = local.tags
+}
+
 # ------------------------------------------------------------- Key Vault --------
 resource "azurerm_key_vault" "kv" {
   name                       = "${local.name}-kv"
@@ -179,14 +214,15 @@ resource "azurerm_key_vault" "kv" {
   sku_name                   = "standard"
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
+  enable_rbac_authorization  = false
   tags                       = local.tags
 }
 
 resource "azurerm_key_vault_access_policy" "deployer" {
-  key_vault_id = azurerm_key_vault.kv.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
-  secret_permissions = ["Get", "List", "Set", "Delete", "Purge"]
+  key_vault_id       = azurerm_key_vault.kv.id
+  tenant_id          = data.azurerm_client_config.current.tenant_id
+  object_id          = data.azurerm_client_config.current.object_id
+  secret_permissions = ["Get", "List", "Set", "Delete", "Purge", "Recover"]
 }
 
 resource "azurerm_key_vault_secret" "gemini" {
@@ -199,7 +235,7 @@ resource "azurerm_key_vault_secret" "gemini" {
 resource "azurerm_key_vault_secret" "db_conn" {
   name = "database-url"
   value = format(
-    "mssql+pyodbc://%s:%s@%s.database.windows.net:1433/%s?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes",
+    "mssql+pyodbc://%s:%s@%s.database.windows.net:1433/%s?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no",
     var.sql_admin_login, var.sql_admin_password,
     azurerm_mssql_server.sql.name, azurerm_mssql_database.db.name
   )
@@ -207,15 +243,19 @@ resource "azurerm_key_vault_secret" "db_conn" {
   depends_on   = [azurerm_key_vault_access_policy.deployer]
 }
 
-# ------------------------------------------------------- Container Apps ---------
-resource "azurerm_log_analytics_workspace" "law" {
-  name                = "${local.name}-law"
-  location            = azurerm_resource_group.rg.location
+# -------------------------------------------------- Container Registry (Basic) --
+# The ONLY resource that bills 24/7 (~$0.17/day). Delete it right after the image
+# is pushed (cloud/scripts/azure-delete-acr.sh); Container Apps caches the image.
+resource "azurerm_container_registry" "acr" {
+  name                = replace("${local.name}acr", "-", "")
   resource_group_name = azurerm_resource_group.rg.name
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Basic"
+  admin_enabled       = false
+  tags                = local.tags
 }
 
+# ------------------------------------------------------- Container Apps ---------
 resource "azurerm_container_app_environment" "cae" {
   name                       = "${local.name}-cae"
   location                   = azurerm_resource_group.rg.location
@@ -232,9 +272,15 @@ resource "azurerm_container_app" "backend" {
 
   identity { type = "SystemAssigned" }
 
+  registry {
+    server   = azurerm_container_registry.acr.login_server
+    identity = "System"
+  }
+
   ingress {
     external_enabled = true
     target_port      = 8000
+    transport        = "auto"
     traffic_weight {
       latest_revision = true
       percentage      = 100
@@ -242,8 +288,8 @@ resource "azurerm_container_app" "backend" {
   }
 
   template {
-    min_replicas = 0
-    max_replicas = 2
+    min_replicas = 0 # scale-to-zero: $0 when idle
+    max_replicas = 1
     container {
       name   = "backend"
       image  = var.backend_image
@@ -266,6 +312,10 @@ resource "azurerm_container_app" "backend" {
         value = azurerm_key_vault.kv.vault_uri
       }
       env {
+        name  = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+        value = azurerm_application_insights.ai.connection_string
+      }
+      env {
         name  = "FRONTEND_ORIGIN"
         value = var.frontend_origin
       }
@@ -274,7 +324,7 @@ resource "azurerm_container_app" "backend" {
   tags = local.tags
 }
 
-# The backend's managed identity may read Key Vault secrets and write blobs.
+# backend identity: read KV secrets, write blobs, pull from ACR
 resource "azurerm_key_vault_access_policy" "backend" {
   key_vault_id       = azurerm_key_vault.kv.id
   tenant_id          = data.azurerm_client_config.current.tenant_id
@@ -288,11 +338,17 @@ resource "azurerm_role_assignment" "backend_blob" {
   principal_id         = azurerm_container_app.backend.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "backend_acr" {
+  scope                = azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_container_app.backend.identity[0].principal_id
+}
+
 # --------------------------------------------------------- Frontend ------------
 resource "azurerm_static_web_app" "frontend" {
   name                = "${local.name}-web"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = "eastus2" # SWA has a limited region list
+  location            = var.swa_location # SWA has a short region list
   sku_tier            = "Free"
   sku_size            = "Free"
   tags                = local.tags

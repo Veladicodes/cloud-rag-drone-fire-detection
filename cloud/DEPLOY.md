@@ -1,121 +1,107 @@
-# Deploying to Azure (real)
+# Deploying to Azure (real, $100 student cap)
 
-The topology is designed in [`../docs/architecture/deployment-overview.md`](../docs/architecture/deployment-overview.md);
-this file is the **runbook** to provision and deploy it. Terraform lives in
-[`terraform/`](terraform/). Every step is credential-gated — run it yourself
-after `az login`.
+Runbook for the topology in [`../docs/architecture/deployment-overview.md`](../docs/architecture/deployment-overview.md),
+tuned for **Azure for Students ($100, no card)** — see [`../CLAUDE.md`](../CLAUDE.md)
+for the cost rules and the forbidden-services list. Terraform: [`terraform/`](terraform/).
 
-> **Status:** the local prototype (SQLite + filesystem Blob + `LLM_MODE=gemini`)
-> is fully working. The steps below have **not** been executed from this repo —
-> they are the exact commands to run once you have Azure for Students access.
+Everything is free-tier / serverless / scale-to-zero except **ACR Basic** (~$0.17/day),
+which is deleted right after the image is built. Realistic cost: **deploy + a demo
+day ≈ $1–3**; idle after `azure-stop.sh` ≈ **$0**; `azure-teardown.sh` → **$0**.
 
-## Prerequisites (one time)
+## Tools
 
 ```bash
-# 1. Azure CLI + Terraform
-winget install Microsoft.AzureCLI Hashicorp.Terraform      # (or brew / apt)
-az login
-az account show --query id -o tsv                          # -> your subscription_id
-
-# 2. Register providers (first subscription use)
-az provider register --namespace Microsoft.App
-az provider register --namespace Microsoft.OperationalInsights
+AZ="/c/Program Files/Microsoft SDKs/Azure/CLI2/wbin/az.cmd"
+TF="$HOME/AppData/Local/Microsoft/WinGet/Packages/Hashicorp.Terraform_Microsoft.Winget.Source_8wekyb3d8bbwe/terraform.exe"
+"$AZ" login --tenant 62813970-e73c-4347-a7d2-5b5543893728   # MFA in browser
+"$AZ" account set --subscription "Azure for Students"
 ```
 
-## 1. Provision infrastructure
+## 1. Provision
 
 ```bash
+cloud/scripts/azure-status.sh                 # baseline spend
+"$AZ" provider register --namespace Microsoft.App --wait
+"$AZ" provider register --namespace Microsoft.Web --wait
+"$AZ" provider register --namespace Microsoft.OperationalInsights --wait
+"$AZ" provider register --namespace Microsoft.Insights --wait
+
 cd cloud/terraform
-cp terraform.tfvars.example terraform.tfvars     # fill in subscription_id, prefix
-export TF_VAR_sql_admin_password='<a strong password>'
-export TF_VAR_gemini_api_key='<the same key from your .env>'
+cp terraform.tfvars.example terraform.tfvars  # subscription_id, location, prefix, alert_email
+export TF_VAR_sql_admin_password='<strong password>'
+export TF_VAR_gemini_api_key='<same key as your .env>'
+# add your public IP so you can run the DB migration:
+"$AZ" rest --method get --url https://api.ipify.org?format=json   # -> operator_ip in tfvars
 
-terraform init
-terraform apply        # creates RG, VNet+subnets, Azure SQL Serverless, Storage,
-                       # Key Vault, Container Apps env + backend app, Static Web App
+"$TF" init
+"$TF" plan -out tfplan     # REVIEW: ~22 resources, no private endpoint / gateway / premium
+"$TF" apply tfplan
 ```
 
-`terraform output` then gives `backend_url`, `frontend_url`, `sql_server_fqdn`,
-`storage_blob_endpoint`, `key_vault_uri`.
+`terraform output` → `backend_url`, `frontend_url`, `sql_server_fqdn`,
+`storage_blob_endpoint`, `acr_login_server`, `key_vault_name`, …
 
-## 2. Database — run migrations against the real Azure SQL
+## 2. Database — migrate the real Azure SQL
 
 ```bash
-# allow your IP through the SQL firewall for the one-off migration
-az sql server firewall-rule create -g $(terraform output -raw resource_group) \
-  -s $(terraform output -raw sql_server_fqdn | cut -d. -f1) \
-  -n devbox --start-ip-address <your-ip> --end-ip-address <your-ip>
-
-pip install "pyodbc"
-export DATABASE_URL="$(az keyvault secret show --vault-name <kv-name> -n database-url --query value -o tsv)"
-alembic upgrade head            # creates drones, telemetry, incidents, response_plans, alerts, alembic_version
+pip install pyodbc
+export DATABASE_URL="$("$AZ" keyvault secret show --vault-name $("$TF" -chdir=cloud/terraform output -raw key_vault_name) -n database-url --query value -o tsv)"
+alembic upgrade head
 python - <<'PY'
 import sqlalchemy as sa, os
 print(sorted(sa.inspect(sa.create_engine(os.environ["DATABASE_URL"])).get_table_names()))
 PY
+# expect: ['alembic_version','alerts','drones','incidents','response_plans','telemetry']
 ```
 
-Expected: `['alembic_version', 'alerts', 'drones', 'incidents', 'response_plans', 'telemetry']`
-— the same check Phase 2 ran against SQLite.
-
-## 3. Backend image
+## 3. Backend image — built IN Azure (no local Docker)
 
 ```bash
-az acr create -g $(terraform output -raw resource_group) -n <prefix>acr --sku Basic
-az acr login -n <prefix>acr
-docker build -f backend/Dockerfile -t <prefix>acr.azurecr.io/cdfd-backend:1 .
-docker push <prefix>acr.azurecr.io/cdfd-backend:1
+ACR=$("$TF" -chdir=cloud/terraform output -raw acr_login_server); ACRNAME=${ACR%%.*}
+"$AZ" acr build -r "$ACRNAME" -t cdfd-backend:1 -f backend/Dockerfile .
+cd cloud/terraform && "$TF" apply -var backend_image="$ACR/cdfd-backend:1"
+curl "$("$TF" output -raw backend_url)/health"
+# {"status":"ok","llm_mode":"gemini","storage_mode":"azure","database":"azure-sql",...}
 
-# point the container app at the real image and re-apply
-terraform apply -var backend_image=<prefix>acr.azurecr.io/cdfd-backend:1
+cloud/scripts/azure-delete-acr.sh             # <-- kill the only 24/7 cost now
 ```
 
-The backend runs with `STORAGE_MODE=azure`, `LLM_MODE=gemini`, and pulls
-`GEMINI_API_KEY` / `DATABASE_URL` from Key Vault via its **system-assigned
-Managed Identity** (Terraform already grants `Get`/`List` on the vault and
-`Storage Blob Data Contributor` on the account).
-
-Verify:
+## 4. Frontend → Static Web App
 
 ```bash
-curl "$(terraform output -raw backend_url)/health"
-# {"status":"ok","llm_mode":"gemini","storage_mode":"azure",...}
-```
-
-## 4. Frontend
-
-```bash
-cd frontend
-echo "VITE_API_BASE=$(cd ../cloud/terraform && terraform output -raw backend_url)" > .env.production
+BACKEND=$("$TF" -chdir=cloud/terraform output -raw backend_url)
+cd frontend && echo "VITE_API_BASE=$BACKEND" > .env.production
 npm ci && npm run build
-npx @azure/static-web-apps-cli deploy ./dist \
-  --deployment-token "$(az staticwebapp secrets list -n <prefix>-web --query properties.apiKey -o tsv)"
+SWA=$("$TF" -chdir=../cloud/terraform output -raw static_web_app_name)
+TOKEN=$("$AZ" staticwebapp secrets list -n "$SWA" --query properties.apiKey -o tsv)
+npx -y @azure/static-web-apps-cli deploy ./dist --deployment-token "$TOKEN" --env production
+# add the SWA origin to backend CORS:
+FRONT=$("$TF" -chdir=../cloud/terraform output -raw frontend_url)
+cd ../cloud/terraform && "$TF" apply -var frontend_origin="$FRONT" -var backend_image="$ACR/cdfd-backend:1"
 ```
 
-Then add the deployed origin to backend CORS:
+## 5. Verify end-to-end + record
 
 ```bash
-cd ../cloud/terraform
-terraform apply -var frontend_origin="$(terraform output -raw frontend_url)" \
-                -var backend_image=<prefix>acr.azurecr.io/cdfd-backend:1
+python testing/simulate_drone.py --api "$BACKEND"      # live telemetry + Gemini plans on the deployed dashboard
 ```
+Fill the "Deployed resources" table in [`README_LOCAL_MODE.md`](README_LOCAL_MODE.md)
+from `terraform output` (names/endpoints, **no secrets**), commit.
 
-Open `frontend_url`, run `python testing/simulate_drone.py --api <backend_url>`,
-and the deployed dashboard should show live telemetry, alerts, and Gemini plans.
+## 6. When you stop working
 
-## 5. Record the real names
-
-After a successful deploy, fill the "Deployed resources" table in
-[`README_LOCAL_MODE.md`](README_LOCAL_MODE.md) with the actual resource names and
-endpoints (not secrets) from `terraform output`.
+```bash
+cloud/scripts/azure-stop.sh        # app -> 0 replicas, DB paused: ~$0
+cloud/scripts/azure-status.sh      # confirm spend
+# ... resume later:
+cloud/scripts/azure-start.sh
+# ... done for weeks / between milestones:
+cloud/scripts/azure-teardown.sh    # terraform destroy -> $0 (DB data lost; demo only)
+```
 
 ## Left mocked on purpose
 
-**Azure Communication Services (SMS).** Provisioning a real SMS-capable phone
-number needs extra identity verification and, in many regions, per-message cost
-beyond the student credit. `backend/services/alert_service.py` keeps its mock
-(console + `logs/alerts.log` + `alerts` table) even in the Azure deployment. This
-is a deliberate, documented scope boundary — the alert *ordering* guarantee
-(immediate before RAG, gate AL-1) is unchanged and still tested. To make it real
-later: create an ACS resource + phone number and replace the two `send_*` bodies
-with `azure.communication.sms.SmsClient` calls.
+**Azure Communication Services (SMS)** — a real sendable number needs extra
+verification + per-message cost. `backend/services/alert_service.py` keeps its
+mock (console + `logs/alerts.log` + `alerts` row) in the Azure deploy too. The
+immediate-before-RAG ordering guarantee (gate **AL-1**) is unchanged and tested.

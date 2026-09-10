@@ -5,13 +5,30 @@ variable "subscription_id" {
 
 variable "location" {
   type    = string
-  default = "eastus"
+  default = "centralindia"
+}
+
+variable "swa_location" {
+  type        = string
+  default     = "eastasia"
+  description = "Static Web App region (limited list: westus2, centralus, eastus2, westeurope, eastasia)."
 }
 
 variable "prefix" {
   type        = string
   default     = "cdfd"
-  description = "Short name prefix for all resources (cloud-drone-fire-detection)."
+  description = "Short (<=6 lowercase) name prefix for every resource."
+}
+
+variable "alert_email" {
+  type        = string
+  description = "E-mail for the $100 budget alerts."
+}
+
+variable "operator_ip" {
+  type        = string
+  default     = ""
+  description = "Public IP allowed through the SQL firewall for one-off `alembic upgrade head`."
 }
 
 variable "sql_admin_login" {
@@ -22,23 +39,23 @@ variable "sql_admin_login" {
 variable "sql_admin_password" {
   type        = string
   sensitive   = true
-  description = "Azure SQL admin password. Set via TF_VAR_sql_admin_password, do not commit."
+  description = "Azure SQL admin password. Pass via TF_VAR_sql_admin_password; never commit."
 }
 
 variable "gemini_api_key" {
   type        = string
   sensitive   = true
-  description = "Gemini API key to store in Key Vault. Set via TF_VAR_gemini_api_key."
+  description = "Gemini API key -> Key Vault. Pass via TF_VAR_gemini_api_key."
 }
 
 variable "backend_image" {
   type        = string
-  description = "Fully-qualified backend container image (e.g. <acr>.azurecr.io/cdfd-backend:latest)."
-  default     = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" # placeholder until first push
+  description = "Backend container image. Placeholder until the first ACR build; then <acr>.azurecr.io/cdfd-backend:<tag>."
+  default     = "mcr.microsoft.com/k8se/quickstart:latest"
 }
 
 variable "frontend_origin" {
   type        = string
   default     = ""
-  description = "Deployed frontend URL, added to backend CORS once the Static Web App exists."
+  description = "Deployed Static Web App URL, added to backend CORS after it exists."
 }
