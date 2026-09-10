@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Resume after azure-stop.sh: wake the SQL DB, let the Container App scale on demand.
+# "Resume" is automatic too: the first HTTP request to the backend wakes the
+# Container App (a few-second cold start) and that query wakes the Serverless SQL
+# DB. This script just warms both and prints the URLs.
 source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
 require_rg
 
-DB_SRV="$("$AZ" sql server list -g "$RG" --query "[0].name" -o tsv)"
-echo "Resuming SQL database cdfd on $DB_SRV..."
-"$AZ" sql db resume -g "$RG" -s "$DB_SRV" -n cdfd -o none 2>/dev/null \
-  || echo "  (already running)"
-
-echo "Container App $APP stays at min-replicas 0 - it wakes on the first request (a few seconds cold start)."
 BACKEND="$(tf_out backend_url)"
-echo "Backend: $BACKEND/health"
+echo "Warming $BACKEND/health ..."
+curl -s -m 90 "$BACKEND/health" ; echo
+echo
+echo "Backend : $BACKEND"
 echo "Frontend: $(tf_out frontend_url)"
+echo "Run a live demo:  python testing/simulate_drone.py --api $BACKEND"
