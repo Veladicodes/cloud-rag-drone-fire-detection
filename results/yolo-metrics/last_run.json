@@ -1,10 +1,31 @@
 {
-  "detector_backend": "yolov8n-coco-placeholder",
-  "dataset": "sample_images (placeholder)",
-  "num_images": 4,
-  "mAP@0.5": "PENDING -- requires FLAME/FireNet dataset + fine-tuned weights",
-  "mAP@0.5:0.95": "PENDING -- requires FLAME/FireNet dataset + fine-tuned weights",
-  "measured_fps": 2.54,
-  "total_detections": 18,
-  "note": "measured_fps is wall-clock throughput of the PLACEHOLDER detector on CPU over sample images -- not a Jetson/TensorRT figure and not comparable to the CV-2 gate (>=30 FPS)."
+  "generated": "2026-09-10T11:59:13",
+  "config_yolo_mode": "auto",
+  "detect": {
+    "status": "MEASURED",
+    "task": "detect",
+    "dataset": "FireNet YOLO val (90 images, class 'fire')",
+    "weights": "ai\\models\\weights\\wildfire_yolov8n.pt",
+    "command": "python -m ai.evaluation.run_yolo_eval --task detect",
+    "mAP@0.5": 0.7334,
+    "mAP@0.5:0.95": 0.3492,
+    "precision": 0.7656,
+    "recall": 0.7391,
+    "measured_fps_cpu": 37.26,
+    "gate_CV1_mAP50_target": 0.88,
+    "gate_CV1_met": false,
+    "gate_CV2_fps_target": 30.0,
+    "gate_CV2_met_on_cpu": true,
+    "gate_CV2_note": "measured on CPU; CV-2 is defined for Jetson Orin + TensorRT, so a CPU FPS below 30 is expected and is not a like-for-like miss."
+  },
+  "classify": {
+    "status": "MEASURED",
+    "task": "classify",
+    "dataset": "FLAME frame-level Fire/No_Fire, held-out Test/ (8,617 img)",
+    "weights": "ai\\models\\weights\\wildfire_yolov8n_cls.pt",
+    "command": "python -m ai.evaluation.run_yolo_eval --task cls",
+    "top1_acc": 0.7179,
+    "top5_acc": 1.0,
+    "note": "FLAME frame set is classification-only (no boxes) -> whole-frame classifier used as an approximation, NOT a real detector; not comparable to the CV-1 mAP gate."
+  }
 }
