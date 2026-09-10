@@ -10,7 +10,7 @@ variable "location" {
 
 variable "aca_location" {
   type        = string
-  default     = "eastasia"
+  default     = "koreacentral"
   description = "Container App Environment region (Central India has 0 quota for these on student subs)."
 }
 

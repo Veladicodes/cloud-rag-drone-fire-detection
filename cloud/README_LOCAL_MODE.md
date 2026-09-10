@@ -17,31 +17,47 @@ config flag — this file records the mapping. Provisioning is in
 | **Frontend host** | `vite` dev server | Terraform `azurerm_static_web_app`; `npm run build` → SWA CLI deploy | see `DEPLOY.md` §4 |
 | **Key Vault / Managed Identity** | `.env` file | Terraform `azurerm_key_vault` + secrets `gemini-api-key`, `database-url`; backend MI granted `Get`/`List` + `Storage Blob Data Contributor` | automatic once deployed |
 
-## Deployed resources (live — `terraform apply` on 2026-09-10)
+## Deployed resources (live — `terraform apply`, 2026-09-10)
 
-29 resources in resource group **`cdfdzupn5-rg`** (`centralindia`, except the
-Container App environment in `eastasia` — Central India has 0 quota for those on
-this student sub; Static Web App in `eastasia`).
+Resource group **`cdfdzupn5-rg`**. Most resources in `centralindia`; the Container
+App environment + app in **`koreacentral`** (see region notes below); Static Web
+App in `eastasia`.
 
 | Output | Value |
 | :--- | :--- |
 | `resource_group` | `cdfdzupn5-rg` |
-| `backend_url` | `https://cdfdzupn5-backend.bluewater-83023317.eastasia.azurecontainerapps.io` |
+| `backend_url` | `https://cdfdzupn5-backend.victorioussea-7b4d5d60.koreacentral.azurecontainerapps.io` |
 | `frontend_url` | `https://lively-meadow-05cf7d800.6.azurestaticapps.net` |
 | `sql_server_fqdn` | `cdfdzupn5-sql.database.windows.net` (db `cdfd`, Serverless GP_S_Gen5_1, auto-pause 60 min) |
 | `storage_blob_endpoint` | `https://cdfdzupn5sa.blob.core.windows.net/` (container `incident-snapshots`, Hot→Cool @30d) |
 | `key_vault_name` | `cdfdzupn5-kv` (secrets: `gemini-api-key`, `database-url`) |
-| `acr_login_server` | `cdfdzupn5acr.azurecr.io` (Basic; delete after the image is in the app) |
-| `app_insights_name` | `cdfdzupn5-ai` (workspace-based, 20% sampling) |
+| `app_insights_name` | `cdfdzupn5-ai` (workspace-based, 20 % sampling) |
 | `log_analytics` | `cdfdzupn5-law` (daily cap 0.2 GB) |
 | Budget | `cdfdzupn5-budget` — $100, alerts 50 / 80 / 100 % → `adithya.a2023@vitstudent.ac.in` |
+| ACR | `cdfdzupn5acr` — **deleted after the image was deployed** (only 24/7 cost; image is cached by Container Apps). Recreate with `terraform apply` if a new image push is needed. |
 
-**Backend image status:** the Container App currently runs the placeholder
-`mcr.microsoft.com/k8se/quickstart` image. The student subscription blocks **ACR
-Tasks** (`TasksOperationsNotAllowed`), so `az acr build` cannot be used — the real
-`backend/Dockerfile` image must be built via GitHub Actions
-(`.github/workflows/deploy-backend.yml`) or a local Docker build, then
-`terraform apply -var backend_image=cdfdzupn5acr.azurecr.io/cdfd-backend:<tag>`.
+**Status: fully working.** `/health` → `{"llm_mode":"gemini","storage_mode":"azure","database":"azure-sql"}`.
+An incident POSTed to the live backend flows: Azure SQL row → immediate mock SMS →
+**real Gemini** grounded plan → enriched mock SMS → all persisted in Azure SQL,
+snapshot to Blob. Frontend served from the Static Web App with CORS wired to the
+backend.
+
+### Region notes (learned during the deploy)
+- **ACR Tasks blocked** on this student sub (`TasksOperationsNotAllowed`) → the
+  image is built by **GitHub Actions** (`.github/workflows/deploy-backend.yml`,
+  secrets `ACR_*`) and pushed to ACR, then rolled out with
+  `terraform apply -var backend_image=…`.
+- **Container App Environment region:** Central India returns
+  `MaxNumberOfEnvironmentsInSubExceeded` (0 quota for student subs); the sub's
+  "Allowed regions" policy is `eastasia / koreacentral / centralindia / uaenorth /
+  indiasouthcentral`. Of those, `koreacentral`, `eastasia`, `uaenorth` allow
+  Container App Environments.
+- **Gemini free tier is geo-blocked from `eastasia`** (`FAILED_PRECONDITION: User
+  location is not supported`). It works from **`koreacentral`**, which is why the
+  Container App lives there while everything else stays in `centralindia`. A VNet
+  is single-region, so the Container App environment runs without VNet
+  integration; the VNet + NSG remain as the documented network design and the DB
+  is firewall-gated.
 
 ## Rule
 Every file that names an Azure service carries a `# LOCAL STAND-IN FOR:` or
