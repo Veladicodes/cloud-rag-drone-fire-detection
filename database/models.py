@@ -82,7 +82,7 @@ class ResponsePlan(Base):
     incident_id: Mapped[int] = mapped_column(ForeignKey("incidents.id"), unique=True, index=True)
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     plan_markdown: Mapped[str] = mapped_column(Text)
-    llm_mode: Mapped[str] = mapped_column(String(16), default="mock")
+    llm_mode: Mapped[str] = mapped_column(String(32), default="mock")
     retrieved_sources: Mapped[str] = mapped_column(Text, default="")  # JSON list of {source, distance}
     insufficient_context: Mapped[bool] = mapped_column(Boolean, default=False)
 

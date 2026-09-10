@@ -281,6 +281,20 @@ resource "azurerm_container_app" "backend" {
     value = azurerm_container_registry.acr.admin_password
   }
 
+  secret {
+    name  = "gemini-api-key"
+    value = var.gemini_api_key
+  }
+
+  secret {
+    name = "database-url"
+    value = format(
+      "mssql+pyodbc://%s:%s@%s.database.windows.net:1433/%s?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no",
+      var.sql_admin_login, var.sql_admin_password,
+      azurerm_mssql_server.sql.name, azurerm_mssql_database.db.name
+    )
+  }
+
   registry {
     server               = azurerm_container_registry.acr.login_server
     username             = azurerm_container_registry.acr.admin_username
@@ -308,6 +322,18 @@ resource "azurerm_container_app" "backend" {
       env {
         name  = "STORAGE_MODE"
         value = "azure"
+      }
+      env {
+        name        = "DATABASE_URL"
+        secret_name = "database-url"
+      }
+      env {
+        name        = "GEMINI_API_KEY"
+        secret_name = "gemini-api-key"
+      }
+      env {
+        name  = "RECREATE_DB"
+        value = var.recreate_db
       }
       env {
         name  = "AZURE_STORAGE_ACCOUNT_URL"

@@ -59,6 +59,7 @@ class Settings(BaseSettings):
 
     confidence_threshold: float = 0.35
     sync_rag: bool = False
+    recreate_db: bool = False  # one-shot: drop_all before create_all (schema reset)
     frontend_origin: str = "http://localhost:5173"
 
     # --- resolved absolute paths -------------------------------------------------
