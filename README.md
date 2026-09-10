@@ -131,24 +131,36 @@ The conceptual architecture separates tasks into key operational layers:
 
 ---
 
-## Repository Structure
-Phase-1 was research planning and architecture; Phase-2 adds a **working local
-prototype** (no Docker / no Azure account / no API keys — every cloud service has
-a local stand-in, mapped in [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md)).
-See [`RUN_LOCALLY.md`](RUN_LOCALLY.md) to run it.
+## Repository Structure & project status
+
+- **Phase 1** — research planning, 15-paper survey, architecture, ADRs, human-alert layer.
+- **Phase 2** — working local prototype (FastAPI + SQLite/Alembic + FAISS RAG + React), 9/9 tests.
+- **Phase 3** — **real** data, LLM, and cloud IaC:
+  - **YOLO** fine-tuned on real data (`YOLO_MODE=finetuned`): FireNet-trained detector
+    (`mAP@0.5 = 0.733`, CPU `37.3 FPS`) + a FLAME frame classifier. CV-1 (≥ 0.88) is
+    **not met** — an honest data-scale limit, analysed in [`results/README.md`](results/README.md)
+    and [`docs/adr/ADR-001.md`](docs/adr/ADR-001.md).
+  - **RAG** with real generation (`LLM_MODE=gemini`, Google Gemini Flash). RQ3/CG-2 measured:
+    `0.0%` hallucinated-source rate, BERTScore F1 `0.83` vs expert plans.
+  - **Azure** — full Terraform ([`cloud/terraform/`](cloud/terraform/)) + real
+    `storage_azure.py` / Azure-SQL code paths + [`cloud/DEPLOY.md`](cloud/DEPLOY.md) runbook.
+    Provisioning is credential-gated (run it yourself).
+
+Every cloud service still has a **local default** stand-in (`STORAGE_MODE` / `LLM_MODE` /
+`YOLO_MODE` config flags) — see [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md).
+Run locally: [`RUN_LOCALLY.md`](RUN_LOCALLY.md). Deploy: [`cloud/DEPLOY.md`](cloud/DEPLOY.md).
 
 ```
 cloud-drone-fire-detection/
-├── docs/                      # Research docs, ADRs, architecture, management plans
-│   ├── research/  architecture/  management/  adr/
-├── backend/                   # FastAPI app: main.py, api/ routes, core/ config+db, services/
+├── docs/                      # Research docs, ADRs (ADR-001 has a Phase-3 outcome addendum), architecture, mgmt
+├── backend/                   # FastAPI: main.py, api/ routes, core/ config+db, services/, Dockerfile
 ├── frontend/                  # React + Vite dashboard: map, alert feed, plan viewer
-├── ai/                        # models/yolo_detector.py, rag/ (ingest·retrieve·orchestrate), evaluation/
-├── database/                  # SQLAlchemy models.py, migrations/, seed.py
-├── data/knowledge-base/       # SOP source docs for the RAG/FAISS index (+ sample_sops/)
-├── cloud/                     # storage_local.py (Blob stand-in), README_LOCAL_MODE.md
-├── testing/                   # simulate_drone.py, unit/ tests, conftest.py
-├── results/                   # measured vs PENDING metrics (machine-written run outputs)
+├── ai/                        # models/ (yolo_detector, prepare_*, train_yolo), rag/ (ingest·retrieve·orchestrate·evaluate), evaluation/
+├── database/                  # SQLAlchemy models.py, Alembic migrations/, seed.py
+├── data/                      # knowledge-base/ (SOPs, committed); flame/ + firenet/ (downloaded, git-ignored)
+├── cloud/                     # storage_local|azure|dispatcher, terraform/, DEPLOY.md, README_LOCAL_MODE.md
+├── testing/                   # simulate_drone.py, unit/ tests, sample_images/, conftest.py
+├── results/                   # MEASURED vs PENDING metrics + machine-written run outputs
 └── presentation/              # Slide structures and poster designs
 ```
 
