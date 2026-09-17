@@ -1,0 +1,37 @@
+{
+  "generated": "2026-09-17T13:50:52",
+  "config": "CPU-only (no GPU), sqlite/local storage, YOLO_MODE=stub, EMBED_MODE=auto, single-process TestClient (no HTTP/TLS overhead measured)",
+  "incident_post_sync_rag_mock_ms": {
+    "n": 20,
+    "min_ms": 68.0,
+    "max_ms": 81.7,
+    "mean_ms": 73.4,
+    "p50_ms": 73.4,
+    "p95_ms": 81.7
+  },
+  "telemetry_throughput": {
+    "drones": 10,
+    "ticks_per_drone": 30,
+    "total_messages": 300,
+    "errors": 0,
+    "wall_seconds": 1.513,
+    "messages_per_second": 198.3
+  },
+  "rag_generate_plan_mock_ms": {
+    "n": 15,
+    "min_ms": 41.8,
+    "max_ms": 50.2,
+    "mean_ms": 46.0,
+    "p50_ms": 46.2,
+    "p95_ms": 50.2
+  },
+  "rag_generate_plan_gemini_ms": {
+    "n": 3,
+    "min_ms": 3377.3,
+    "max_ms": 4748.7,
+    "mean_ms": 3915.7,
+    "p50_ms": 3621.1,
+    "p95_ms": 4748.7
+  },
+  "note": "rag_generate_plan_gemini_ms is real Google Gemini API latency (network round trip included) if GEMINI_API_KEY_REAL was set when running this script; null otherwise. Kept to a small n to respect the free-tier rate limit - not a load test. A transient 503 from the API falls back to mock output and is included in the sample as-is (see ai/rag/orchestrate.py's fallback path) unless noted otherwise below."
+}

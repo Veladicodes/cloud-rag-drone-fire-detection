@@ -66,7 +66,27 @@ Sample predictions on held-out FireNet validation images (blue boxes = model out
 - Reference set: `ai/rag/reference_plans/` — 4 incidents + hand-written "ideal" plans grounded only in the 5 sample SOPs.
 - **Caveat:** 4 test incidents over a 5-file SOP corpus is a *demo-scale* evaluation, not a production benchmark. `bert-score` uses `distilbert-base-uncased`.
 
-### 4. End-to-end pipeline (unchanged from Phase 2, re-verified Phase 3)
+### 4. End-to-end latency / throughput
+
+| Measurement | p50 | p95 | n |
+| :--- | ---: | ---: | ---: |
+| `POST /api/v1/incidents` (detect→immediate alert→RAG plan→enriched alert, `SYNC_RAG=true`, `LLM_MODE=mock`) | 73.4 ms | 81.7 ms | 20 |
+| `generate_plan()` in isolation, real sentence-transformer retrieval + `LLM_MODE=mock` | 46.2 ms | 50.2 ms | 15 |
+| `generate_plan()` in isolation, real Gemini API (`gemini-2.5-flash`, network round trip included) | 3.62 s | 4.75 s | 3 |
+| `WS /ws/telemetry`, 10 concurrent simulated drones × 30 ticks each | — | — | 300 msgs, **198 msg/s**, 0 errors |
+
+- Reproduce: `EMBED_MODE=auto python testing/benchmark_latency.py` (add
+  `GEMINI_API_KEY_REAL=<key>` to also sample real Gemini latency — kept to n=3 sequential
+  calls on purpose, to stay inside the free-tier rate limit; this is a latency sample, not
+  a load test of the LLM). Full run: [`latency/benchmark.json`](latency/benchmark.json).
+- Measured in-process via `fastapi.testclient.TestClient` (CPU-only, no GPU, sqlite/local
+  storage), so these numbers exclude real network/TLS overhead — real Azure Container Apps
+  latency would add that on top of the ~73 ms pipeline cost shown here.
+- The ~3.6 s Gemini figure is the dominant cost in the full pipeline once real generation
+  replaces the mock — everything else (detection, retrieval, DB writes, alert dispatch) is
+  under 100 ms combined.
+
+### 5. End-to-end pipeline (unchanged from Phase 2, re-verified Phase 3)
 
 | Check | How |
 | :--- | :--- |
