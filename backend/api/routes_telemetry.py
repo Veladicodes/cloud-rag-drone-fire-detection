@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from backend.api.ws import manager
+from backend.core.auth import require_api_key_ws
 from backend.core.db import SessionLocal
 from database.models import Drone, Telemetry
 
@@ -15,6 +16,7 @@ router = APIRouter()
 
 @router.websocket("/ws/telemetry")
 async def ws_telemetry(ws: WebSocket) -> None:
+    await require_api_key_ws(ws)
     await manager.connect(ws)
     try:
         while True:

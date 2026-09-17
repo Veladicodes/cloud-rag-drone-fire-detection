@@ -54,6 +54,12 @@ variable "gemini_api_key" {
   description = "Gemini API key -> Key Vault. Pass via TF_VAR_gemini_api_key."
 }
 
+variable "api_key" {
+  type        = string
+  sensitive   = true
+  description = "Shared secret required on POST /api/v1/incidents and WS /ws/telemetry -> Key Vault. Pass via TF_VAR_api_key (generate with e.g. `openssl rand -hex 32`)."
+}
+
 variable "backend_image" {
   type        = string
   description = "Backend container image. Placeholder until the first ACR build; then <acr>.azurecr.io/cdfd-backend:<tag>."

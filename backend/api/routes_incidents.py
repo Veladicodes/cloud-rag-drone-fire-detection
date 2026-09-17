@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend.api.ws import manager
+from backend.core.auth import require_api_key
 from backend.core.config import get_settings
 from backend.core.db import SessionLocal, get_db
 from backend.services.alert_service import send_immediate_alert
@@ -21,8 +22,8 @@ router = APIRouter(prefix="/api/v1", tags=["incidents"])
 
 
 class IncidentIn(BaseModel):
-    lat: float
-    lon: float
+    lat: float = Field(ge=-90.0, le=90.0)
+    lon: float = Field(ge=-180.0, le=180.0)
     confidence: float = Field(ge=0.0, le=1.0)
     detected_class: str = "smoke"
     drone_id: int | None = None
@@ -41,7 +42,7 @@ def _run_rag_bg(incident_id: int) -> None:
         db.close()
 
 
-@router.post("/incidents", status_code=201)
+@router.post("/incidents", status_code=201, dependencies=[Depends(require_api_key)])
 def post_incident(body: IncidentIn, bg: BackgroundTasks, db: Session = Depends(get_db)) -> dict:
     settings = get_settings()
     incident = create_incident(db, body.model_dump(exclude_none=True))

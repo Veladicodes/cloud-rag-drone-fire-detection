@@ -232,6 +232,13 @@ resource "azurerm_key_vault_secret" "gemini" {
   depends_on   = [azurerm_key_vault_access_policy.deployer]
 }
 
+resource "azurerm_key_vault_secret" "api_key" {
+  name         = "api-key"
+  value        = var.api_key
+  key_vault_id = azurerm_key_vault.kv.id
+  depends_on   = [azurerm_key_vault_access_policy.deployer]
+}
+
 resource "azurerm_key_vault_secret" "db_conn" {
   name = "database-url"
   value = format(
@@ -287,6 +294,11 @@ resource "azurerm_container_app" "backend" {
   }
 
   secret {
+    name  = "api-key"
+    value = var.api_key
+  }
+
+  secret {
     name = "database-url"
     value = format(
       "mssql+pyodbc://%s:%s@%s.database.windows.net:1433/%s?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=no",
@@ -330,6 +342,10 @@ resource "azurerm_container_app" "backend" {
       env {
         name        = "GEMINI_API_KEY"
         secret_name = "gemini-api-key"
+      }
+      env {
+        name        = "API_KEY"
+        secret_name = "api-key"
       }
       env {
         name  = "RECREATE_DB"

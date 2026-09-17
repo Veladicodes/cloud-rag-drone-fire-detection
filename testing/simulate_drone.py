@@ -58,7 +58,11 @@ def _frame(seed: int) -> bytes:
 
 
 async def stream(api: str, drones: int, iterations: int, interval: float, incident_every: int) -> None:
+    api_key = SETTINGS.api_key
     ws_url = api.replace("http", "ws", 1) + "/ws/telemetry"
+    if api_key:
+        ws_url += f"?api_key={api_key}"
+    http_headers = {"X-API-Key": api_key} if api_key else {}
     positions = {
         f"SIM-{i+1}": [BASE_LAT + random.uniform(-0.05, 0.05), BASE_LON + random.uniform(-0.05, 0.05)]
         for i in range(drones)
@@ -95,7 +99,7 @@ async def stream(api: str, drones: int, iterations: int, interval: float, incide
                         "temperature_c": random.uniform(24, 38),
                         "fuel_dryness": random.choice(["moderate", "high", "high"]),
                     }
-                    r = await http.post(f"{api}/api/v1/incidents", json=payload)
+                    r = await http.post(f"{api}/api/v1/incidents", json=payload, headers=http_headers)
                     print(f"  -> INCIDENT posted ({best['cls']} {best['confidence']:.2f}) "
                           f"[{best['backend']}] : {r.status_code} {r.json()}")
                 else:

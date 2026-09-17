@@ -62,6 +62,12 @@ class Settings(BaseSettings):
     recreate_db: bool = False  # one-shot: drop_all before create_all (schema reset)
     frontend_origin: str = "http://localhost:5173"
 
+    # Shared secret for write endpoints (POST /incidents, WS /ws/telemetry) and
+    # the read endpoints an operator dashboard uses. Empty (default) means auth
+    # is OFF, for local dev/CI. Set a real value via Azure Key Vault / app
+    # settings in any internet-reachable deployment — see cloud/DEPLOY.md.
+    api_key: str = ""
+
     # --- resolved absolute paths -------------------------------------------------
     def abspath(self, value: str) -> Path:
         p = Path(value)

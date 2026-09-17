@@ -30,6 +30,7 @@ cd cloud/terraform
 cp terraform.tfvars.example terraform.tfvars  # subscription_id, location, prefix, alert_email
 export TF_VAR_sql_admin_password='<strong password>'
 export TF_VAR_gemini_api_key='<same key as your .env>'
+export TF_VAR_api_key="$(openssl rand -hex 32)"       # required: drone/dashboard shared secret, see backend/core/auth.py
 # add your public IP so you can run the DB migration:
 "$AZ" rest --method get --url https://api.ipify.org?format=json   # -> operator_ip in tfvars
 
