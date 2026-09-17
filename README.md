@@ -160,7 +160,7 @@ cloud-drone-fire-detection/
 ├── database/                  # SQLAlchemy models.py, Alembic migrations/, seed.py
 ├── data/                      # knowledge-base/ (SOPs, committed); flame/ + firenet/ (downloaded, git-ignored)
 ├── cloud/                     # storage_local|azure|dispatcher, terraform/, DEPLOY.md, README_LOCAL_MODE.md
-├── testing/                   # simulate_drone.py, unit/ tests, sample_images/, conftest.py
+├── testing/                   # simulate_drone.py (JSON WS), simulate_mavlink_drone.py (real MAVLink), unit/ tests, sample_images/, conftest.py
 ├── results/                   # MEASURED vs PENDING metrics + machine-written run outputs
 └── presentation/              # Slide structures and poster designs
 ```

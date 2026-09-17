@@ -36,7 +36,16 @@ async def lifespan(_app: FastAPI):
         "startup: db=%s llm_mode=%s embed_mode=%s yolo_mode=%s",
         settings.database_url, settings.llm_mode, settings.embed_mode, settings.yolo_mode,
     )
+    mavlink_stop = None
+    if settings.mavlink_enabled:
+        from backend.api.ws import manager
+        from backend.services.mavlink_ingest import start_background
+
+        mavlink_stop = start_background(settings.mavlink_endpoint, manager.broadcast_threadsafe)
+        logging.getLogger("main").info("mavlink_ingest: enabled on %s", settings.mavlink_endpoint)
     yield
+    if mavlink_stop is not None:
+        mavlink_stop.set()
 
 
 app = FastAPI(
