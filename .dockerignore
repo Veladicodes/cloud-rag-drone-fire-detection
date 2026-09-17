@@ -29,4 +29,3 @@ cloud/terraform/tfplan
 results
 .env
 .sqlpw
-CLAUDE_CODE_*.md

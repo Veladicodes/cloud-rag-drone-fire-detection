@@ -7,7 +7,7 @@
 | `firenet/` | no (git-ignored) | FireNet dataset — student-downloaded. |
 
 The datasets are large and license-gated, so they are **not** in git. Download them
-per `CLAUDE_CODE_COMPLETION_BRIEF.md` §1 and extract as below.
+from the sources below and extract into the paths shown.
 
 ## FLAME (primary) — `data/flame/`
 

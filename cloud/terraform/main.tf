@@ -1,6 +1,6 @@
 # Provisions the topology from docs/architecture/deployment-overview.md, tuned for a
-# $100 Azure-for-Students cap (see /CLAUDE.md). Everything here is free-tier,
-# serverless, scale-to-zero, or (ACR) deleted right after use.
+# $100 Azure-for-Students cap (see cloud/DEPLOY.md "Cost model & guardrails").
+# Everything here is free-tier, serverless, scale-to-zero, or (ACR) deleted right after use.
 #
 #   NO private endpoints / App Gateway / NAT / Firewall / OpenAI / premium SKUs.
 #   Azure Communication Services (SMS) stays MOCKED (cloud/DEPLOY.md).

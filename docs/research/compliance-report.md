@@ -62,7 +62,7 @@ Upon successful Review-1 panel approval, the team should proceed with these acti
 
 ## 4. Review-1 Remediation Log (this pass)
 
-Changes applied in the remediation pass driven by `CLAUDE_CODE_MASTER_BRIEF.md`, so the delta from the previous submission attempt is visible at a glance.
+Changes applied in the Review-1 remediation pass, so the delta from the previous submission attempt is visible at a glance.
 
 ### Section 1 — Literature survey 5 → 15 papers
 - `literature-survey.md`: added papers 6–15 (verified list) with Method / Findings / Gap rows in the existing per-paper structure; intro rewritten to state the 5 / 5 / 5 split; `TODO(verify)` kept on papers 8 and 15; **citation-integrity warning added for papers 1–5**.
@@ -130,9 +130,9 @@ SMS provider. Tracked in `results/README.md`.
 
 ## 6. Phase-3 Completion Log (real data, real LLM, IaC)
 
-Driven by `CLAUDE_CODE_COMPLETION_BRIEF.md`. Closes three of the four "still
-pending" items above; the fourth (real Azure *deployment*) has its code written
-but its `terraform apply` is credential-gated and not run from this repo.
+The Phase-3 completion pass. Closes three of the four "still pending" items above;
+the fourth (real Azure *deployment*) is covered by the Terraform in `cloud/` and
+the `cloud/DEPLOY.md` runbook.
 
 **Config for the measured numbers:** local SQLite + filesystem Blob, CPU-only
 (Ryzen 7 5800H, no GPU), `LLM_MODE=gemini` (`gemini-2.5-flash`),
