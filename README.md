@@ -139,7 +139,8 @@ The conceptual architecture separates tasks into key operational layers:
   - **YOLO** fine-tuned on real data (`YOLO_MODE=finetuned`): FireNet-trained detector
     (`mAP@0.5 = 0.733`, CPU `37.3 FPS`) + a FLAME frame classifier. CV-1 (≥ 0.88) is
     **not met** — an honest data-scale limit, analysed in [`results/README.md`](results/README.md)
-    and [`docs/adr/ADR-001.md`](docs/adr/ADR-001.md).
+    and [`docs/adr/ADR-001.md`](docs/adr/ADR-001.md). Confusion matrix, PR curve, and sample
+    detections on held-out images: [`results/README.md#1-yolo-detection--firenet-real-bounding-boxes`](results/README.md#1-yolo-detection--firenet-real-bounding-boxes).
   - **RAG** with real generation (`LLM_MODE=gemini`, Google Gemini Flash). RQ3/CG-2 measured:
     `0.0%` hallucinated-source rate, BERTScore F1 `0.83` vs expert plans.
   - **Azure** — full Terraform ([`cloud/terraform/`](cloud/terraform/)) + real
