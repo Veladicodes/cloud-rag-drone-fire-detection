@@ -21,6 +21,9 @@ faiss-cpu>=1.8
 pytest>=8.0
 alembic>=1.13
 
+# --- core: real-MAVLink telemetry bridge (backend/services/mavlink_ingest.py) ---
+pymavlink>=2.4
+
 # --- optional: real embeddings (falls back to hash embedder if absent) ---
 sentence-transformers>=2.7 ; python_version >= "3.9"
 

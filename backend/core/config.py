@@ -68,6 +68,11 @@ class Settings(BaseSettings):
     # settings in any internet-reachable deployment — see cloud/DEPLOY.md.
     api_key: str = ""
 
+    # Real-MAVLink telemetry bridge (backend/services/mavlink_ingest.py). Off by
+    # default; the JSON WS at /ws/telemetry is the default ingestion path.
+    mavlink_enabled: bool = False
+    mavlink_endpoint: str = "udp:0.0.0.0:14550"
+
     # --- resolved absolute paths -------------------------------------------------
     def abspath(self, value: str) -> Path:
         p = Path(value)

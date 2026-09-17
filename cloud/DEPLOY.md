@@ -146,3 +146,13 @@ Realistic: deploy + a demo day ≈ **$1–3**; idle with ACR deleted ≈ **< $1/
    and Key Vault only.
 6. If the credit hits 80 %, `terraform destroy` and continue in local mode
    (`STORAGE_MODE=local`, SQLite).
+
+## MAVLink telemetry bridge — local/on-prem only
+
+`backend/services/mavlink_ingest.py` (`MAVLINK_ENABLED=true`, see `.env.example`) decodes
+real MAVLink UDP packets as an alternative to the JSON `/ws/telemetry` WebSocket. It is
+**not** wired into the Azure deployment: Container Apps Consumption ingress is HTTP(S)
+only, not raw UDP, so this bridge is meant to run on a companion computer / gateway host
+that then relays over the existing HTTPS WebSocket — not directly on the Container App.
+Run it locally: `python -m backend.services.mavlink_ingest` +
+`python testing/simulate_mavlink_drone.py`.
