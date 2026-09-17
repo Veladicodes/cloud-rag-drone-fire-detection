@@ -143,6 +143,10 @@ The conceptual architecture separates tasks into key operational layers:
     detections on held-out images: [`results/README.md#1-yolo-detection--firenet-real-bounding-boxes`](results/README.md#1-yolo-detection--firenet-real-bounding-boxes).
   - **RAG** with real generation (`LLM_MODE=gemini`, Google Gemini Flash). RQ3/CG-2 measured:
     `0.0%` hallucinated-source rate, BERTScore F1 `0.83` vs expert plans.
+  - **Latency** measured end-to-end: detect→alert→RAG plan pipeline **~73 ms** (mock LLM),
+    real Gemini generation **~3.6 s** (the dominant cost once real generation replaces mock),
+    telemetry throughput **~198 msg/s** across 10 concurrent simulated drones — see
+    [`results/README.md#4-end-to-end-latency--throughput`](results/README.md#4-end-to-end-latency--throughput).
   - **Azure** — full Terraform ([`cloud/terraform/`](cloud/terraform/)) + real
     `storage_azure.py` / Azure-SQL code paths + [`cloud/DEPLOY.md`](cloud/DEPLOY.md) runbook.
     Provisioning is credential-gated (run it yourself).

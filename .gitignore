@@ -58,6 +58,7 @@ results/latency/*
 !results/yolo-metrics/plots/*.png
 !results/yolo-metrics/plots/*.jpg
 !results/rag-metrics/rag_eval.json
+!results/latency/benchmark.json
 
 # Phase-3 derived dataset dirs
 data/firenet_yolo/
