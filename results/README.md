@@ -27,6 +27,18 @@ Config used for the Phase-3 measured numbers: **local** (SQLite + filesystem Blo
 - **Why CV-1 is missed, stated plainly:** FireNet gives only **412** training images of **one** class at low resolution; 50 CPU epochs. The 88% target assumed FLAME-scale (47,992-frame) box-annotated data, which FLAME's *classification* sub-item does not provide. FireNet is a documented *secondary* set (`docs/research/datasets.md`). Closing CV-1 needs FLAME box annotations (from its segmentation-mask sub-item) + GPU training. This is a **data-scale** shortfall, not a framework problem — the architecture (ADR-001) trained cleanly and hit the speed target.
 - **CV-2 note:** 37.3 FPS is real but measured on a desktop CPU. The gate is written for a Jetson Orin with a TensorRT engine; on-hardware benchmarking is still open (see PENDING).
 
+**Visual evidence** (regenerate with `python -m ai.evaluation.run_yolo_eval --task detect`,
+output lands in `runs/detect/val-*/`; copies below are committed so they render without
+re-running anything):
+
+| Confusion matrix | Precision-recall curve |
+| :---: | :---: |
+| ![Confusion matrix](yolo-metrics/plots/confusion_matrix.png) | ![PR curve](yolo-metrics/plots/pr_curve.png) |
+
+Sample predictions on held-out FireNet validation images (blue boxes = model output, label = class + confidence):
+
+![Sample detections](yolo-metrics/plots/sample_predictions.jpg)
+
 ### 2. FLAME frame classifier (approximation — NOT a detector)
 
 | Metric | Value |
