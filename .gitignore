@@ -18,6 +18,9 @@ logs/
 ai/rag/faiss_index/
 *.pt
 .env
+.env.local
+.env.*.local
+!.env.example
 
 # --- Phase-3: large datasets & training runs (never commit) ---
 *.zip
@@ -31,9 +34,18 @@ node_modules/
 frontend/dist/
 frontend/.vite/
 
-# --- OS ---
+# --- OS / editor ---
 .DS_Store
 Thumbs.db
+*.swp
+*~
+.idea/
+
+# --- backup / scratch files ---
+*.bak
+*.tmp
+*.old
+*.orig
 
 # --- results: keep READMEs + .gitkeep + last_run.json, ignore other run outputs ---
 results/yolo-metrics/*
