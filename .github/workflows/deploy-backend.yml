@@ -7,16 +7,20 @@ name: build & push backend image to ACR
 #   az containerapp update -g cdfdzupn5-rg -n cdfdzupn5-backend --image <...>
 
 on:
+  # Manual only while the Azure Container Registry is torn down
+  # (cloud/scripts/azure-teardown.sh). Running on every push fails at the ACR
+  # login step and leaves a permanently red check. To deploy on push again,
+  # restore the `push:` trigger below once the registry and secrets exist.
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - "ai/**"
-      - "database/**"
-      - "cloud/storage*.py"
-      - "requirements.txt"
-      - ".github/workflows/deploy-backend.yml"
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "backend/**"
+  #     - "ai/**"
+  #     - "database/**"
+  #     - "cloud/storage*.py"
+  #     - "requirements.txt"
+  #     - ".github/workflows/deploy-backend.yml"
 
 jobs:
   test:
