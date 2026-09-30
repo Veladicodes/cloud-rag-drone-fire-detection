@@ -47,6 +47,11 @@ Thumbs.db
 *.old
 *.orig
 
+# --- personal working docs (not repo deliverables) ---
+Review2_Report.docx
+Review2_Report.pdf
+DEMO_CHEATSHEET.md
+
 # --- results: keep READMEs + .gitkeep + last_run.json, ignore other run outputs ---
 results/yolo-metrics/*
 results/rag-metrics/*
