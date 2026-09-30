@@ -2,6 +2,80 @@
 
 ---
 
+## At a Glance
+
+A drone-side YOLO detector flags fire or smoke and reports an incident to a cloud API. The API
+stores the snapshot and the incident, sends an **immediate** alert to responders, and only then
+runs a Retrieval-Augmented Generation (RAG) pipeline that grounds an LLM response plan in
+wildland-fire SOP documents. Everything streams to a live operator dashboard.
+
+```
+Drone (edge YOLO) ──► FastAPI gateway ──► Blob (snapshot) + SQL (incident)
+                            │
+                            ├─► immediate alert (before any AI work starts)
+                            └─► FAISS retrieval ─► Gemini ─► cited response plan ─► enriched alert
+                                                                      │
+                                                     React dashboard ◄┘ (map · alerts · plan viewer)
+```
+
+**As implemented** (the sections further down describe the original proposal; see
+[Proposed design vs. as built](#proposed-design-vs-as-built)):
+
+| Layer | Implementation |
+| :--- | :--- |
+| Edge detection | YOLOv8n fine-tuned on FireNet boxes (plus a FLAME frame classifier) |
+| Ingestion | FastAPI REST + WebSocket telemetry; optional real-MAVLink UDP bridge |
+| Data | Azure SQL Database and Azure Blob Storage (SQLite + local folder by default) |
+| RAG | `sentence-transformers/all-mpnet-base-v2` embeddings + FAISS index over the SOP corpus |
+| LLM | Google Gemini Flash (`gemini-2.5-flash`); a deterministic mock runs offline and in CI |
+| Alerts | Mocked SMS/push (logged and stored); Azure Communication Services is intentionally not wired |
+| Dashboard | React 18 + Vite + Leaflet |
+| Infrastructure | Terraform, Azure Container Apps, Static Web Apps, Key Vault, GitHub Actions |
+
+### Quick start (local, no Azure account or API keys)
+
+```bash
+make setup && make index && make seed     # deps, FAISS index, database
+make backend                              # API on http://127.0.0.1:8000  (terminal A)
+cd frontend && npm install && npm run dev # dashboard on http://localhost:5173 (terminal B)
+make sim                                  # simulated drones + incidents (terminal C)
+make test                                 # unit tests (15 passing)
+```
+
+Full walkthrough: [`RUN_LOCALLY.md`](RUN_LOCALLY.md). Every cloud service has a local stand-in
+selected by a config flag, mapped in [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md).
+
+### Azure deployment
+
+The stack was provisioned with Terraform on an Azure for Students subscription and verified end to
+end: a simulated incident produced an Azure SQL row, an immediate alert, a Gemini-generated plan
+grounded in cited SOPs, and a snapshot in Blob Storage. The footprint is serverless or free-tier
+only (Container Apps scaled to zero, serverless Azure SQL with auto-pause, Static Web Apps free
+tier), with a $100 budget alert and a capped Log Analytics workspace, so an idle deployment costs
+close to nothing.
+
+- Runbook, cost model and teardown: [`cloud/DEPLOY.md`](cloud/DEPLOY.md)
+- Infrastructure as code: [`cloud/terraform/`](cloud/terraform/)
+- Deployed resources and region lessons: [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md)
+- Write endpoints are guarded by a shared `API_KEY` when one is configured (see
+  [`cloud/DEPLOY.md`](cloud/DEPLOY.md)); set it in any internet-reachable deployment.
+
+### Measured results
+
+Numbers come from [`results/`](results/) and are reproducible with the commands in
+[`results/README.md`](results/README.md); targets that were **not** met are stated as such.
+
+| Metric | Result |
+| :--- | :--- |
+| Fire detection, FireNet val (90 images) | mAP@0.5 **0.733**, precision 0.766, recall 0.739 (target 0.88 **not met**) |
+| Detector speed, CPU | 37.3 FPS |
+| RAG hallucinated-source rate (real Gemini, 4 incidents) | **0.0 %**, BERTScore F1 0.827 |
+| Detect → alert → plan pipeline, mock LLM | about 73 ms mean |
+| Real Gemini plan generation | about 3.9 s mean (3 samples) |
+| Telemetry throughput, 10 simulated drones | about 198 messages/s, 0 errors |
+
+---
+
 ## Abstract
 This project outlines a cloud-native research framework designed for early-stage forest fire detection and automated tactical response planning. The proposed system integrates autonomous Unmanned Aerial Vehicle (UAV) patrols, edge-cloud collaborative deep learning, and Retrieval-Augmented Generation (RAG). By capturing real-time aerial imagery and applying YOLO-based classification models at the edge, the system flags early fire hazards. The resulting incident metadata is transmitted to a central FastAPI service hosted on Microsoft Azure. This service initiates a cognitive RAG pipeline, matching the incident coordinates, weather patterns, and local fuel indicators against indexed forestry Standard Operating Procedures (SOPs) stored in a FAISS vector database. The final output is an LLM-synthesized response guide sent to a web-based Emergency Response Dashboard. This unified approach eliminates the latency between hazard detection and coordinated dispatch planning.
 
@@ -77,10 +151,10 @@ The system processes data in a sequential pipeline:
 [ Blob Storage ]              [ Vector Database ] (SOP index chunks matched via FAISS)
 (Snapshot JPEG archived)              │
                                      ▼
-                              [ RAG Pipeline ] (LangChain prompt synthesis)
+                              [ RAG Pipeline ] (prompt synthesis with cited SOP chunks)
                                      │
                                      ▼
-                              [ LLM (GPT-4o) ] (Response checklist generation)
+                              [ LLM (Gemini Flash) ] (Response checklist generation)
                                      │
                                      ▼
                        [ Emergency Response Dashboard ] (UI visualization)
@@ -101,15 +175,30 @@ The conceptual architecture separates tasks into key operational layers:
 ---
 
 ## Technology Stack
-- **Frontend**: React, TypeScript, Leaflet, Tailwind CSS.
-- **Backend**: Python, FastAPI, Uvicorn, SQLAlchemy.
-- **Cloud**: Microsoft Azure (Container Apps, Azure SQL, Blob Storage, Key Vault).
-- **Database**: Azure SQL, FAISS (vector index).
-- **Computer Vision**: PyTorch, YOLOv8/v9, TensorRT.
-- **Machine Learning**: Sentence-Transformers, OpenAI API.
-- **RAG**: LangChain.
+As implemented in this repository:
+- **Frontend**: React 18, Vite, Leaflet (react-leaflet).
+- **Backend**: Python, FastAPI, Uvicorn, SQLAlchemy, Alembic.
+- **Cloud**: Microsoft Azure (Container Apps, Azure SQL, Blob Storage, Key Vault, Static Web Apps, Application Insights), provisioned with Terraform.
+- **Database**: Azure SQL (SQLite locally), FAISS (vector index).
+- **Computer Vision**: Ultralytics YOLOv8 (PyTorch).
+- **Machine Learning**: Sentence-Transformers, Google Gemini API (`google-genai`).
+- **RAG**: custom retrieval and prompt orchestration over FAISS (`ai/rag/`); LangChain is an optional extra and is not required.
+- **CI/CD**: GitHub Actions (pytest gate, then container image build).
 - **Version Control**: Git, GitHub.
 - **Development Tools**: VS Code, PowerShell.
+
+### Proposed design vs. as built
+The research sections above and the documents under [`docs/architecture/`](docs/architecture/)
+describe the original proposal. Where the implementation differs:
+
+| Proposed | As built | Why |
+| :--- | :--- | :--- |
+| Azure OpenAI (GPT-4o) | Google Gemini Flash | Azure OpenAI needs approval and paid quota on a student subscription; Gemini has a free tier |
+| LangChain orchestration | Direct retrieval and prompt assembly | Fewer dependencies; the pipeline runs without LangChain |
+| React + TypeScript + Tailwind | React + Vite (JavaScript) + Leaflet | Smaller prototype dashboard |
+| Private endpoints, VNet-integrated app | Firewall-gated SQL, public Container App; the VNet and NSG remain as the documented design | Private endpoints cost about $7/month each; the student subscription limits regions |
+| Azure Communication Services SMS | Mocked SMS/push (logged and stored) | A sendable number needs extra verification and per-message cost |
+| YOLOv8/v9 with TensorRT on Jetson | YOLOv8n evaluated on CPU | No edge hardware available; CV-2 is stated as a CPU measurement |
 
 ---
 
@@ -134,7 +223,7 @@ The conceptual architecture separates tasks into key operational layers:
 ## Repository Structure & project status
 
 - **Phase 1** — research planning, 15-paper survey, architecture, ADRs, human-alert layer.
-- **Phase 2** — working local prototype (FastAPI + SQLite/Alembic + FAISS RAG + React), 9/9 tests.
+- **Phase 2** — working local prototype (FastAPI + SQLite/Alembic + FAISS RAG + React); the suite now has 15 passing tests.
 - **Phase 3** — **real** data, LLM, and cloud IaC:
   - **YOLO** fine-tuned on real data (`YOLO_MODE=finetuned`): FireNet-trained detector
     (`mAP@0.5 = 0.733`, CPU `37.3 FPS`) + a FLAME frame classifier. CV-1 (≥ 0.88) is
@@ -149,7 +238,13 @@ The conceptual architecture separates tasks into key operational layers:
     [`results/README.md#4-end-to-end-latency--throughput`](results/README.md#4-end-to-end-latency--throughput).
   - **Azure** — full Terraform ([`cloud/terraform/`](cloud/terraform/)) + real
     `storage_azure.py` / Azure-SQL code paths + [`cloud/DEPLOY.md`](cloud/DEPLOY.md) runbook.
-    Provisioning is credential-gated (run it yourself).
+    **Deployed and verified end to end** on Azure Container Apps, Azure SQL, Blob Storage,
+    Key Vault and Static Web Apps; resource names and region notes are in
+    [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md).
+  - **Security** — shared-secret `API_KEY` on incident and telemetry ingestion, secrets in
+    Key Vault, and a CI test gate before every image build.
+  - **Real MAVLink bridge** — `backend/services/mavlink_ingest.py` decodes genuine MAVLink UDP
+    packets as an alternative to the JSON WebSocket (local/companion-computer use only).
 
 Every cloud service still has a **local default** stand-in (`STORAGE_MODE` / `LLM_MODE` /
 `YOLO_MODE` config flags) — see [`cloud/README_LOCAL_MODE.md`](cloud/README_LOCAL_MODE.md).
