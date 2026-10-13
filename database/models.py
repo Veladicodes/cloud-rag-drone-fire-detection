@@ -89,6 +89,23 @@ class ResponsePlan(Base):
     incident: Mapped[Incident] = relationship(back_populates="plan")
 
 
+class Recipient(Base):
+    """Per-role contact info for the Alert Service.
+
+    Separate from Alert (which is a delivery log) — this is the live contact
+    directory `alert_service.py` resolves IMMEDIATE_RECIPIENTS/ENRICHED_RECIPIENTS
+    role names against before dispatching. One row per role.
+    """
+    __tablename__ = "recipients"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    role: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    phone_number: Mapped[str] = mapped_column(String(32), default="")
+    email: Mapped[str] = mapped_column(String(128), default="")
+    channel_pref: Mapped[str] = mapped_column(String(16), default="sms")  # sms | email
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+
 class Alert(Base):
     __tablename__ = "alerts"
 

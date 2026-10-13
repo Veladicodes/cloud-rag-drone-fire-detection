@@ -21,7 +21,7 @@ from contextlib import asynccontextmanager  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
-from backend.api import routes_incidents, routes_plans, routes_telemetry  # noqa: E402
+from backend.api import routes_incidents, routes_plans, routes_recipients, routes_telemetry  # noqa: E402
 from backend.core.config import get_settings  # noqa: E402
 from backend.core.db import init_db  # noqa: E402
 
@@ -62,6 +62,7 @@ app.add_middleware(
 app.include_router(routes_telemetry.router)
 app.include_router(routes_incidents.router)
 app.include_router(routes_plans.router)
+app.include_router(routes_recipients.router)
 
 
 @app.get("/health")

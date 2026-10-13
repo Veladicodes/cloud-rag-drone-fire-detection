@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from backend.core.config import get_settings
-from database.models import Alert, Incident
+from database.models import Alert, Incident, Recipient
 
 log = logging.getLogger("alert_service")
 
@@ -40,6 +40,42 @@ def _log_line(text: str) -> None:
     log.warning(text)
 
 
+def _get_or_seed_recipient(db: Session, role: str) -> Recipient:
+    r = db.query(Recipient).filter_by(role=role).one_or_none()
+    if r is None:
+        settings = get_settings()
+        r = Recipient(role=role, phone_number=settings.default_alert_phone, email=settings.default_alert_email)
+        db.add(r)
+        db.commit()
+        db.refresh(r)
+    return r
+
+
+def _dispatch(recipient: Recipient, channel: str, body: str) -> tuple[str, bool]:
+    """Real-vs-mock dispatch for one recipient/channel. Returns (channel_used, delivered)."""
+    settings = get_settings()
+    if settings.alert_mode != "acs":
+        _log_line(f"[MOCK {channel.upper()} to {recipient.role}]: {body}")
+        return channel, True
+
+    from backend.services.acs_client import send_email, send_sms
+
+    if channel in ("sms", "push") and recipient.phone_number:
+        ok, detail = send_sms(recipient.phone_number, body)
+        if ok:
+            log.info("ACS SMS delivered to %s (%s): %s", recipient.role, recipient.phone_number, detail)
+            return "sms", True
+        log.warning(
+            "ACS SMS failed for %s (%s): %s — falling back to email",
+            recipient.role, recipient.phone_number, detail,
+        )
+    if recipient.email:
+        ok, detail = send_email(recipient.email, "FireWatch Alert", body)
+        return "email", ok
+    _log_line(f"[UNDELIVERABLE — no working channel for {recipient.role}]: {body}")
+    return channel, False
+
+
 def send_immediate_alert(db: Session, incident: Incident) -> list[Alert]:
     """Raw alert — coordinates, confidence, timestamp, snapshot key. No RAG."""
     rows: list[Alert] = []
@@ -50,10 +86,11 @@ def send_immediate_alert(db: Session, incident: Incident) -> list[Alert]:
         f"snapshot={incident.snapshot_key or 'n/a'}"
     )
     for role in IMMEDIATE_RECIPIENTS:
-        _log_line(f"[MOCK SMS to {role}]: {body}")
+        recipient = _get_or_seed_recipient(db, role)
+        channel_used, delivered = _dispatch(recipient, "sms", body)
         row = Alert(
             incident_id=incident.id, alert_class="immediate",
-            recipient_role=role, channel="sms", body=body,
+            recipient_role=role, channel=channel_used, body=body, delivered=delivered,
         )
         db.add(row)
         rows.append(row)
@@ -73,11 +110,12 @@ def send_enriched_plan(db: Session, incident: Incident, plan_markdown: str) -> l
         f"{headline[:160]} | full plan: /incidents/{incident.id}"
     )
     for role in ENRICHED_RECIPIENTS:
-        channel = "push" if role == "affected_zone_residents" else "sms"
-        _log_line(f"[MOCK {channel.upper()} to {role}]: {body}")
+        preferred = "push" if role == "affected_zone_residents" else "sms"
+        recipient = _get_or_seed_recipient(db, role)
+        channel_used, delivered = _dispatch(recipient, preferred, body)
         row = Alert(
             incident_id=incident.id, alert_class="enriched",
-            recipient_role=role, channel=channel, body=body,
+            recipient_role=role, channel=channel_used, body=body, delivered=delivered,
         )
         db.add(row)
         rows.append(row)

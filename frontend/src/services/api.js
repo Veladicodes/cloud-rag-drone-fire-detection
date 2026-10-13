@@ -16,9 +16,21 @@ async function j(path) {
   return r.json();
 }
 
+async function put(path, body) {
+  const r = await fetch(BASE + path, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...(API_KEY ? { "X-API-Key": API_KEY } : {}) },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`${path} -> ${r.status}`);
+  return r.json();
+}
+
 export const api = {
   incidents: () => j("/api/v1/incidents"),
   alerts: () => j("/api/v1/alerts"),
   plan: (id) => j(`/api/v1/plans/${id}`),
   health: () => j("/health"),
+  recipients: () => j("/api/v1/recipients"),
+  updateRecipient: (role, data) => put(`/api/v1/recipients/${role}`, data),
 };

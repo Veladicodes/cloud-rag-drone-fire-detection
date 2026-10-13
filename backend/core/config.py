@@ -57,6 +57,19 @@ class Settings(BaseSettings):
     # LOCAL MOCK FOR: Azure Communication Services + Notification Hubs.
     alert_log_path: str = "./logs/alerts.log"
 
+    # Alert delivery backend.  mock | acs
+    #   mock -> deterministic, logged only (no key, local dev/CI default)
+    #   acs  -> real Azure Communication Services SMS (primary) + Email (fallback)
+    # NOTE: ACS SMS does not support India (+91) as a destination country as of
+    # this writing — see docs/architecture/acs-sms-india-risk.md. Email is the
+    # real, working fallback channel for Indian recipients.
+    alert_mode: str = "mock"
+    acs_connection_string: str = ""
+    acs_sms_sender: str = ""
+    acs_email_sender: str = ""
+    default_alert_phone: str = "+919487038353"
+    default_alert_email: str = ""
+
     confidence_threshold: float = 0.35
     sync_rag: bool = False
     recreate_db: bool = False  # one-shot: drop_all before create_all (schema reset)

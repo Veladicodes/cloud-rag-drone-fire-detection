@@ -19,7 +19,8 @@ COPY requirements.txt ./requirements.txt
 # ultralytics / bert-score (those are training/eval only).
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
  && pip install --no-cache-dir -r requirements.txt \
-      pyodbc azure-storage-blob azure-identity google-genai
+      pyodbc azure-storage-blob azure-identity google-genai \
+      azure-communication-sms azure-communication-email
 
 COPY backend/ ./backend/
 COPY database/ ./database/
